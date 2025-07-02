@@ -2,6 +2,8 @@
 
 import aws_cdk as cdk
 from cdk_nag import AwsSolutionsChecks
+
+from cdk_pupper.backend_stack import BackendStack
 from cdk_pupper.cdk_pupper_stack import CdkPupperStack
 from cdk_pupper.database_stack import DatabaseStack
 from cdk_pupper.network_stack import NetworkStack
@@ -15,4 +17,15 @@ network_stack = NetworkStack(app, "PupperNetworkStack")
 db_stack = DatabaseStack(app, "PupperDatabaseStack",
                          vpc=network_stack.vpc)
 storage_stack = StorageStack(app, "PupperStorageStack")
+
+backend_stack = BackendStack(app, "PupperBackendStack",
+                             vpc=network_stack.vpc,
+                             buckets={
+                                 "original": storage_stack.original_bucket,
+                                 "thumbnail": storage_stack.thumbnail_bucket,
+                                 "generated": storage_stack.generated_bucket
+                             },
+                             db_secret=db_stack.db_instance.secret
+                             )
+
 app.synth()
