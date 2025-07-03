@@ -1,8 +1,12 @@
+# backend_stack.py
+
 from aws_cdk import (
     Stack,
     aws_lambda as _lambda,
     aws_apigatewayv2 as apigw,
+    aws_iam as iam,
     aws_apigatewayv2_integrations as integrations,
+    aws_ec2 as ec2,
     aws_logs as logs,
     Duration,
     CfnOutput,
@@ -13,51 +17,72 @@ from cdk_nag import NagSuppressions
 
 class BackendStack(Stack):
 
-    def __init__(self, scope: Construct, construct_id: str, vpc, buckets, db_secret, **kwargs):
+    def __init__(self, scope: Construct, construct_id: str, vpc, buckets, db_instance, db_sg, **kwargs):
         super().__init__(scope, construct_id, **kwargs)
-
-        # ✅ Lambda Layer with FastAPI + Mangum + dependencies
+        # Lambda Layer with FastAPI + Mangum + dependencies
         fastapi_layer = _lambda.LayerVersion(self, "FastAPILayer",
                                              code=_lambda.Code.from_asset("fastapi_layer.zip"),
-                                             # adjusted path based on your structure
                                              compatible_runtimes=[_lambda.Runtime.PYTHON_3_12],
-                                             description="Layer with FastAPI and Mangum dependencies"
-                                             )
+                                             description="Layer with FastAPI and Mangum dependencies")
 
-        # ✅ Lambda function for FastAPI backend
+        lambda_sg = ec2.SecurityGroup(self, "LambdaSG",
+                                      vpc=vpc,
+                                      description="Lambda security group",
+                                      allow_all_outbound=True)
+
+        # db_sg.add_ingress_rule(
+        #     peer=lambda_sg,
+        #     connection=ec2.Port.tcp(5432),
+        #     description="Allow Lambda to connect to PostgreSQL"
+        # )
+        # Lambda function for FastAPI backend
         backend_lambda = _lambda.Function(self, "PupperBackendLambda",
                                           runtime=_lambda.Runtime.PYTHON_3_12,
-                                          handler="main.handler",  # Uses Mangum handler for API Gateway
+                                          handler="main.handler",
                                           code=_lambda.Code.from_asset("backend/app"),
-                                          # adjusted path based on your structure
                                           layers=[fastapi_layer],
                                           memory_size=512,
-                                          timeout=Duration.seconds(30),
+                                          timeout=Duration.seconds(120),
                                           environment={
-                                              "DB_SECRET_ARN": db_secret.secret_arn,
-                                              "BUCKET_NAME": buckets["original"].bucket_name
+                                              "DB_SECRET_ARN": db_instance.secret.secret_arn,
+                                              "DB_HOST": db_instance.db_instance_endpoint_address,
+                                              "BUCKET_NAME": buckets["original"].bucket_name,
                                           },
                                           vpc=vpc,
+                                          vpc_subnets=ec2.SubnetSelection(
+                                              subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS
+                                          ),
+                                          security_groups=[lambda_sg],
                                           )
 
-        # ✅ Permissions
-        db_secret.grant_read(backend_lambda)
-        buckets["original"].grant_read_write(backend_lambda)
+        backend_lambda.connections.allow_from(db_sg, ec2.Port.tcp(5432))
 
-        # ✅ API Gateway HTTP API
+        backend_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=[
+                    "rds-db:connect"
+                ],
+                resources=[
+                    f"arn:aws:rds-db:{self.region}:{self.account}:dbuser:*/postgres"
+                ]
+            )
+        )
+        # Permissions
+        db_instance.secret.grant_read(backend_lambda)
+        buckets["original"].grant_read_write(backend_lambda)
+        # API Gateway HTTP API
         log_group = logs.LogGroup(self, "PupperApiLogs")
 
         http_api = apigw.HttpApi(self, "PupperHttpApi",
                                  default_integration=integrations.HttpLambdaIntegration(
                                      "PupperHttpLambdaIntegration",
                                      handler=backend_lambda
-                                 )
-                                 )
-
-        # ✅ Output API Gateway endpoint URL
+                                 ))
+        # Output API Gateway endpoint URL
         CfnOutput(self, "PupperHttpApiUrl", value=http_api.api_endpoint)
 
-        # ✅ Suppressions for Lambda role
+        # Suppressions for Lambda role
         NagSuppressions.add_resource_suppressions(
             backend_lambda.role,
             suppressions=[
@@ -76,7 +101,6 @@ class BackendStack(Stack):
             ]
         )
 
-        # ✅ Suppress APIG1 (access logging) and APIG4 (authorization) on child resources
         NagSuppressions.add_resource_suppressions_by_path(
             self,
             f"/{self.stack_name}/PupperHttpApi/DefaultStage/Resource",

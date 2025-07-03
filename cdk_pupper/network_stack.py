@@ -2,11 +2,16 @@ from aws_cdk import (
     Stack,
     aws_ec2 as ec2,
     aws_logs as logs,
+    aws_rds as rds,
 )
 from constructs import Construct
 
 
 class NetworkStack(Stack):
+
+    @property
+    def db_subnet_group(self):
+        return self._db_subnet_group
 
     def __init__(self, scope: Construct, construct_id: str, **kwargs):
         super().__init__(scope, construct_id, **kwargs)
@@ -28,6 +33,17 @@ class NetworkStack(Stack):
                                )
                            ]
                            )
+
+        # Create DB subnet group
+        self._db_subnet_group = rds.SubnetGroup(
+            self,
+            "DbSubnetGroup",
+            description="Subnet group for RDS database",
+            vpc=self.vpc,
+            vpc_subnets=ec2.SubnetSelection(
+                subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS
+            )
+        )
 
         # Add Flow Log to CloudWatch Logs
         log_group = logs.LogGroup(self, "PupperVpcFlowLogs")
