@@ -19,7 +19,7 @@ class DatabaseStack(Stack):
     def db_sg(self):
         return self._db_instance.connections.security_groups[0]
 
-    def __init__(self, scope: Construct, construct_id: str, vpc: ec2.Vpc,subnet_group , **kwargs):
+    def __init__(self, scope: Construct, construct_id: str, vpc: ec2.Vpc, subnet_group,lambda_sg, **kwargs):
         super().__init__(scope, construct_id, **kwargs)
 
         db_secret = secretsmanager.Secret(self, "PupperDBSecret",
@@ -30,7 +30,6 @@ class DatabaseStack(Stack):
                                               exclude_characters=" %+~`#$&*()|[]{}:;<>?!'/\"\\",
                                               password_length=32
                                           ))
-
 
         # Create RDS PostgreSQL instance (Free Tier) for
         self._db_instance = rds.DatabaseInstance(self, "PupperPostgresInstance",
@@ -53,6 +52,17 @@ class DatabaseStack(Stack):
                                                  backup_retention=Duration.days(7),
                                                  database_name="pupperdb"
                                                  )
+        # Allow Lambda SG to connect to Postgres
+        self._db_instance.connections.allow_default_port_from(
+            lambda_sg,
+            "Allow Lambda SG to connect to Postgres"
+        )
+        # self.db_sg.add_ingress_rule(
+        #     peer=lambda_sg,
+        #     connection=ec2.Port.tcp(5432),
+        #     description="Allow Lambda to connect to PostgreSQL"
+        # )
+
         # self.db_sg.add_ingress_rule(
         #     peer=ec2.Peer.ipv4("0.0.0.0/0"),
         #     connection=ec2.Port.tcp(5432),

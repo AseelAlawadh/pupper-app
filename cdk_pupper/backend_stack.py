@@ -17,7 +17,7 @@ from cdk_nag import NagSuppressions
 
 class BackendStack(Stack):
 
-    def __init__(self, scope: Construct, construct_id: str, vpc, buckets, db_instance, db_sg, **kwargs):
+    def __init__(self, scope: Construct, construct_id: str, vpc, buckets, db_instance, lambda_sg, **kwargs):
         super().__init__(scope, construct_id, **kwargs)
         # Lambda Layer with FastAPI + Mangum + dependencies
         fastapi_layer = _lambda.LayerVersion(self, "FastAPILayer",
@@ -25,10 +25,10 @@ class BackendStack(Stack):
                                              compatible_runtimes=[_lambda.Runtime.PYTHON_3_12],
                                              description="Layer with FastAPI and Mangum dependencies")
 
-        lambda_sg = ec2.SecurityGroup(self, "LambdaSG",
-                                      vpc=vpc,
-                                      description="Lambda security group",
-                                      allow_all_outbound=True)
+        # lambda_sg = ec2.SecurityGroup(self, "LambdaSG",
+        #                               vpc=vpc,
+        #                               description="Lambda security group",
+        #                               allow_all_outbound=True)
 
         # db_sg.add_ingress_rule(
         #     peer=lambda_sg,
@@ -55,7 +55,7 @@ class BackendStack(Stack):
                                           security_groups=[lambda_sg],
                                           )
 
-        backend_lambda.connections.allow_from(db_sg, ec2.Port.tcp(5432))
+        # backend_lambda.connections.allow_from(db_sg, ec2.Port.tcp(5432))
 
         backend_lambda.add_to_role_policy(
             iam.PolicyStatement(

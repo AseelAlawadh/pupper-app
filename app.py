@@ -15,7 +15,8 @@ app = cdk.App()
 # CdkPupperStack(app, "CdkPupperStack")
 network_stack = NetworkStack(app, "PupperNetworkStack")
 db_stack = DatabaseStack(app, "PupperDatabaseStack",
-                         vpc=network_stack.vpc, subnet_group= network_stack.db_subnet_group)
+                         vpc=network_stack.vpc, subnet_group=network_stack.db_subnet_group,
+                         lambda_sg=network_stack.lambda_sg)
 storage_stack = StorageStack(app, "PupperStorageStack")
 
 backend_stack = BackendStack(app, "PupperBackendStack",
@@ -26,6 +27,6 @@ backend_stack = BackendStack(app, "PupperBackendStack",
                                  "generated": storage_stack.generated_bucket
                              },
                              db_instance=db_stack.db_instance,
-                             db_sg=db_stack.db_sg
+                             lambda_sg=network_stack.lambda_sg
                              )
 app.synth()

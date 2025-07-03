@@ -13,6 +13,10 @@ class NetworkStack(Stack):
     def db_subnet_group(self):
         return self._db_subnet_group
 
+    @property
+    def lambda_sg(self):
+        return self._lambda_sg
+
     def __init__(self, scope: Construct, construct_id: str, **kwargs):
         super().__init__(scope, construct_id, **kwargs)
 
@@ -33,6 +37,12 @@ class NetworkStack(Stack):
                                )
                            ]
                            )
+
+        # Create Lambda Security Group here
+        self._lambda_sg = ec2.SecurityGroup(self, "LambdaSG",
+                                            vpc=self.vpc,
+                                            description="Lambda security group",
+                                            allow_all_outbound=True)
 
         # Create DB subnet group
         self._db_subnet_group = rds.SubnetGroup(
