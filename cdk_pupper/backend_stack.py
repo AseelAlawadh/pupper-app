@@ -82,6 +82,23 @@ class BackendStack(Stack):
         # Output API Gateway endpoint URL
         CfnOutput(self, "PupperHttpApiUrl", value=http_api.api_endpoint)
 
+        migration_lambda = _lambda.Function(
+            self, "PupperMigrationLambda",
+            runtime=_lambda.Runtime.PYTHON_3_12,
+            handler="main.handler",
+            code=_lambda.Code.from_asset("backend/migrations"),
+            layers=[fastapi_layer],
+            vpc=vpc,
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
+            security_groups=[lambda_sg],
+            environment={
+                "DB_SECRET_ARN": db_instance.secret.secret_arn,
+                "DB_HOST": db_instance.db_instance_endpoint_address,
+            },
+            timeout=Duration.seconds(60),
+            memory_size=256,
+        )
+        db_instance.secret.grant_read(migration_lambda)
         # Suppressions for Lambda role
         NagSuppressions.add_resource_suppressions(
             backend_lambda.role,
