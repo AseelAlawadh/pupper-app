@@ -16,6 +16,7 @@ interface Dog {
   image_url: string;
   wags: number;
   growls: number;
+  age?: number;
 }
 
 const calculateAge = (birthday: string) => {
@@ -35,10 +36,10 @@ const Home: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState({
     state: '',
-    minWeight: '',
-    maxWeight: '',
-    minAge: '',
-    maxAge: '',
+    min_weight: '',
+    max_weight: '',
+    min_age: '',
+    max_age: '',
     color: ''
   });
 
@@ -59,7 +60,7 @@ const Home: React.FC = () => {
       const queryParams = new URLSearchParams();
 
       Object.entries(filters).forEach(([key, value]) => {
-        if (value) queryParams.append(key, value);
+        if (value !== '') queryParams.append(key, value);
       });
 
       const response = await fetch(`${apiUrl}/dogs/filter?${queryParams.toString()}`, {
@@ -135,16 +136,16 @@ const Home: React.FC = () => {
             />
             <TextField
                 label="Min Weight"
-                name="minWeight"
-                value={filters.minWeight}
+                name="min_weight"
+                value={filters.min_weight}
                 onChange={handleFilterChange}
                 type="number"
                 fullWidth
             />
             <TextField
                 label="Max Weight"
-                name="maxWeight"
-                value={filters.maxWeight}
+                name="max_weight"
+                value={filters.max_weight}
                 onChange={handleFilterChange}
                 type="number"
                 fullWidth
@@ -158,16 +159,16 @@ const Home: React.FC = () => {
             />
             <TextField
                 label="Min Age"
-                name="minAge"
-                value={filters.minAge}
+                name="min_age"
+                value={filters.min_age}
                 onChange={handleFilterChange}
                 type="number"
                 fullWidth
             />
             <TextField
                 label="Max Age"
-                name="maxAge"
-                value={filters.maxAge}
+                name="max_age"
+                value={filters.max_age}
                 onChange={handleFilterChange}
                 type="number"
                 fullWidth
@@ -201,7 +202,7 @@ const Home: React.FC = () => {
                     {dog.name}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" align="center">
-                    {dog.birthday ? `${calculateAge(dog.birthday)} years old` : 'Age unknown'} {dog.breed ? `| ${dog.breed}` : ''}
+                    {typeof dog.age === 'number' ? `${dog.age} years old` : (dog.birthday ? `${calculateAge(dog.birthday)} years old` : 'Age unknown')} {dog.breed ? `| ${dog.breed}` : ''}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 1 }}>
                     🐾 Wags: {dog.wags} | 😠 Growls: {dog.growls}
