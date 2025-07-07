@@ -1,8 +1,64 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+  min-height: 100vh;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  background: #f5f5f5;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2E7D32;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #1B5E20;
+}
+
+/* Smooth transitions */
+* {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Focus styles for accessibility */
+button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid #2E7D32;
+  outline-offset: 2px;
+}
+
+/* Loading animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
 }
 
 .logo {
@@ -39,4 +95,40 @@
 
 .read-the-docs {
   color: #888;
+}
+
+.amplify-auth-card {
+  box-shadow: 0 8px 32px rgba(46,125,50,0.10);
+  border-radius: 16px;
+  background: rgba(255,255,255,0.95);
+  padding: 32px;
+  min-width: 350px;
+  max-width: 400px;
+  margin: auto;
+  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+}
+
+.amplify-auth-card button {
+  background: linear-gradient(90deg, #2E7D32 0%, #4CAF50 100%);
+  color: white;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(46,125,50,0.10);
+}
+
+.amplify-auth-card a {
+  color: #2E7D32;
+  font-weight: 500;
+}
+
+.amplify-auth-card label {
+  font-weight: 500;
+  color: #2E7D32;
+}
+
+.amplify-auth-card input {
+  border-radius: 8px;
+  border: 1px solid #C8E6C9;
+  font-size: 16px;
 }

@@ -3,10 +3,19 @@ import { Link, useNavigate } from 'react-router-dom';
 import { fetchAuthSession } from 'aws-amplify/auth';
 import {
   Container, Card, CardMedia, CardContent, Typography,
-  Button, TextField, Paper, MenuItem, Box
+  Button, TextField, Paper, MenuItem, Box, Chip,
+  Skeleton, Alert, Divider
 } from '@mui/material';
-
-import Grid from '@mui/material/Grid';
+import {
+  Search as SearchIcon,
+  Clear as ClearIcon,
+  Add as AddIcon,
+  Favorite as FavoriteIcon,
+  ThumbDown as ThumbDownIcon,
+  LocationOn as LocationIcon,
+  Cake as CakeIcon,
+  Scale as ScaleIcon
+} from '@mui/icons-material';
 
 interface Dog {
   dog_id: string;
@@ -17,6 +26,10 @@ interface Dog {
   wags: number;
   growls: number;
   age?: number;
+  city?: string;
+  state?: string;
+  weight?: number;
+  color?: string;
 }
 
 const calculateAge = (birthday: string) => {
@@ -123,29 +136,78 @@ const Home: React.FC = () => {
   }, []);
 
   if (loading) {
-    return <Container maxWidth="lg" sx={{ mt: 4 }}><Typography>Loading dogs...</Typography></Container>;
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 3 }}>
+          {[...Array(6)].map((_, index) => (
+            <Card key={index}>
+              <Skeleton variant="rectangular" height={200} />
+              <CardContent>
+                <Skeleton variant="text" width="60%" />
+                <Skeleton variant="text" width="40%" />
+                <Skeleton variant="text" width="80%" />
+              </CardContent>
+            </Card>
+          ))}
+        </Box>
+      </Container>
+    );
   }
 
   if (error) {
-    return <Container maxWidth="lg" sx={{ mt: 4 }}><Typography color="error">{error}</Typography></Container>;
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
+      </Container>
+    );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4 }}>
-      <Typography variant="h4" gutterBottom align="center" sx={{ fontWeight: 'bold' }}>
-        Available Dogs for Adoption
-      </Typography>
+    <Box sx={{ width: '100vw', minHeight: '100vh', background: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <Box sx={{ width: '100%', maxWidth: 1100, mx: 'auto', px: { xs: 1, sm: 2, md: 0 } }}>
+        {/* Hero Section */}
+        <Box sx={{
+          textAlign: 'center',
+          mb: 6,
+          p: 4,
+          background: 'linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%)',
+          borderRadius: 4,
+          color: 'white',
+          boxShadow: '0 8px 32px rgba(46, 125, 50, 0.3)'
+        }}>
+          <Typography variant="h3" gutterBottom sx={{ fontWeight: 700, mb: 2 }}>
+            Find Your Perfect Companion
+          </Typography>
+          <Typography variant="h6" sx={{ mb: 3, opacity: 0.9 }}>
+            Discover amazing Labrador Retrievers waiting for their forever homes
+          </Typography>
+          <Button
+            variant="contained"
+            size="large"
+            onClick={() => navigate('/create-dog')}
+            startIcon={<AddIcon />}
+            sx={{
+              backgroundColor: 'white',
+              color: '#2E7D32',
+              '&:hover': { backgroundColor: '#f5f5f5' },
+              px: 4,
+              py: 1.5
+            }}
+          >
+            Add New Dog
+          </Button>
+        </Box>
 
-      <Grid container justifyContent="center" sx={{ mb: 3 }}>
-        <Button variant="contained" color="primary" onClick={() => navigate('/create-dog')}>
-          Add New Dog
-        </Button>
-      </Grid>
-
-      <Paper elevation={3} sx={{ p: 3, mb: 3, borderRadius: 3, background: '#f9f9f9', border: '1px solid #e0e0e0' }}>
-        <form onSubmit={handleFilterSubmit}>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-            <Box sx={{ flex: '1 1 200px', minWidth: 180 }}>
+        {/* Filter Section */}
+        <Paper elevation={3} sx={{ p: 4, mb: 4, borderRadius: 3, background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+            <SearchIcon sx={{ mr: 1, color: 'primary.main' }} />
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              Find Your Perfect Match
+            </Typography>
+          </Box>
+          <form onSubmit={handleFilterSubmit}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 2 }}>
               <TextField
                 select
                 label="State"
@@ -153,15 +215,12 @@ const Home: React.FC = () => {
                 value={filters.state}
                 onChange={handleFilterChange}
                 fullWidth
-                variant="outlined"
                 size="small"
               >
                 {stateOptions.map((option) => (
                   <MenuItem key={option} value={option}>{option || 'Any State'}</MenuItem>
                 ))}
               </TextField>
-            </Box>
-            <Box sx={{ flex: '1 1 200px', minWidth: 180 }}>
               <TextField
                 select
                 label="Color"
@@ -169,113 +228,179 @@ const Home: React.FC = () => {
                 value={filters.color}
                 onChange={handleFilterChange}
                 fullWidth
-                variant="outlined"
                 size="small"
               >
                 {colorOptions.map((option) => (
                   <MenuItem key={option} value={option}>{option || 'Any Color'}</MenuItem>
                 ))}
               </TextField>
-            </Box>
-            <Box sx={{ flex: '1 1 200px', minWidth: 180 }}>
               <TextField
-                label="Min Weight (lbs)"
+                label="Min Weight"
                 name="min_weight"
                 value={filters.min_weight}
                 onChange={handleFilterChange}
                 type="number"
                 fullWidth
-                variant="outlined"
                 size="small"
-                helperText=""
+                InputProps={{ endAdornment: <Typography variant="caption">lbs</Typography> }}
               />
-            </Box>
-            <Box sx={{ flex: '1 1 200px', minWidth: 180 }}>
               <TextField
-                label="Max Weight (lbs)"
+                label="Max Weight"
                 name="max_weight"
                 value={filters.max_weight}
                 onChange={handleFilterChange}
                 type="number"
                 fullWidth
-                variant="outlined"
                 size="small"
-                helperText=""
+                InputProps={{ endAdornment: <Typography variant="caption">lbs</Typography> }}
               />
-            </Box>
-            <Box sx={{ flex: '1 1 200px', minWidth: 180 }}>
               <TextField
-                label="Min Age (years)"
+                label="Min Age"
                 name="min_age"
                 value={filters.min_age}
                 onChange={handleFilterChange}
                 type="number"
                 fullWidth
-                variant="outlined"
                 size="small"
-                helperText=""
+                InputProps={{ endAdornment: <Typography variant="caption">years</Typography> }}
               />
-            </Box>
-            <Box sx={{ flex: '1 1 200px', minWidth: 180 }}>
               <TextField
-                label="Max Age (years)"
+                label="Max Age"
                 name="max_age"
                 value={filters.max_age}
                 onChange={handleFilterChange}
                 type="number"
                 fullWidth
-                variant="outlined"
                 size="small"
-                helperText=""
+                InputProps={{ endAdornment: <Typography variant="caption">years</Typography> }}
               />
             </Box>
-            <Box sx={{ flex: '1 1 200px', minWidth: 180 }}>
-              <Button type="submit" variant="contained" color="primary" fullWidth sx={{ height: 40 }}>
-                Apply Filters
+            <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
+              <Button
+                type="submit"
+                variant="contained"
+                startIcon={<SearchIcon />}
+                sx={{ px: 3 }}
+              >
+                Search
               </Button>
-            </Box>
-            <Box sx={{ flex: '1 1 200px', minWidth: 180 }}>
-              <Button variant="outlined" color="secondary" fullWidth sx={{ height: 40 }} onClick={handleClearFilters}>
+              <Button
+                variant="outlined"
+                onClick={handleClearFilters}
+                startIcon={<ClearIcon />}
+              >
                 Clear Filters
               </Button>
             </Box>
-          </Box>
-        </form>
-      </Paper>
+          </form>
+        </Paper>
 
-      <Grid container spacing={4}>
-        {dogs.map(dog => (
-            <Card
-                elevation={4}
-                sx={{
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': { transform: 'scale(1.03)', boxShadow: 6 },
-                  p: 1
-                }}
-            >
-              <Link to={`/dogs/${dog.dog_id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                <CardMedia
-                    component="img"
-                    height="220"
-                    image={dog.image_url}
-                    alt={dog.name}
-                />
-                <CardContent>
-                  <Typography variant="h6" component="div" align="center" sx={{ fontWeight: 'bold' }}>
-                    {dog.name}
+        {/* Results Section */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>
+            Available Dogs ({dogs.length})
+          </Typography>
+          <Divider sx={{ mb: 3 }} />
+        </Box>
+
+        {/* Dog Cards */}
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 3 }}>
+          {dogs.map((dog) => (
+            <Card key={dog.dog_id} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <CardMedia
+                component="img"
+                height="250"
+                image={dog.image_url || 'https://via.placeholder.com/300x200?text=No+Image'}
+                alt={dog.name}
+                sx={{ objectFit: 'cover' }}
+              />
+              <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: 'primary.main' }}>
+                  {dog.name}
+                </Typography>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <CakeIcon sx={{ fontSize: 16, mr: 0.5, color: 'text.secondary' }} />
+                  <Typography variant="body2" color="text.secondary">
+                    {calculateAge(dog.birthday)} years old
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" align="center">
-                    {typeof dog.age === 'number' ? `${dog.age} years old` : (dog.birthday ? `${calculateAge(dog.birthday)} years old` : 'Age unknown')} {dog.breed ? `| ${dog.breed}` : ''}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 1 }}>
-                    🐾 Wags: {dog.wags} | 😠 Growls: {dog.growls}
-                  </Typography>
-                </CardContent>
-              </Link>
+                </Box>
+
+                {dog.weight && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                    <ScaleIcon sx={{ fontSize: 16, mr: 0.5, color: 'text.secondary' }} />
+                    <Typography variant="body2" color="text.secondary">
+                      {dog.weight} lbs
+                    </Typography>
+                  </Box>
+                )}
+
+                {dog.city && dog.state && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <LocationIcon sx={{ fontSize: 16, mr: 0.5, color: 'text.secondary' }} />
+                    <Typography variant="body2" color="text.secondary">
+                      {dog.city}, {dog.state}
+                    </Typography>
+                  </Box>
+                )}
+
+                <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                  {dog.color && (
+                    <Chip
+                      label={dog.color}
+                      size="small"
+                      variant="outlined"
+                      color="primary"
+                    />
+                  )}
+                  <Chip
+                    label={dog.breed}
+                    size="small"
+                    variant="outlined"
+                  />
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <FavoriteIcon sx={{ fontSize: 16, color: 'success.main' }} />
+                    <Typography variant="body2" color="text.secondary">
+                      {dog.wags}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <ThumbDownIcon sx={{ fontSize: 16, color: 'error.main' }} />
+                    <Typography variant="body2" color="text.secondary">
+                      {dog.growls}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                <Button
+                  component={Link}
+                  to={`/dogs/${dog.dog_id}`}
+                  variant="contained"
+                  fullWidth
+                  sx={{ mt: 'auto' }}
+                >
+                  View Details
+                </Button>
+              </CardContent>
             </Card>
-        ))}
-      </Grid>
-    </Container>
+          ))}
+        </Box>
+
+        {dogs.length === 0 && !loading && (
+          <Box sx={{ textAlign: 'center', py: 8 }}>
+            <Typography variant="h6" color="text.secondary" gutterBottom>
+              No dogs found matching your criteria
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Try adjusting your filters or check back later for new additions
+            </Typography>
+          </Box>
+        )}
+      </Box>
+    </Box>
   );
 };
 
