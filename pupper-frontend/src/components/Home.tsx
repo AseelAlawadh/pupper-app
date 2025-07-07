@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { fetchAuthSession } from 'aws-amplify/auth';
 import {
   Container, Card, CardMedia, CardContent, Typography,
-  Button, TextField, Paper
+  Button, TextField, Paper, MenuItem, Box
 } from '@mui/material';
 
 import Grid from '@mui/material/Grid';
@@ -29,6 +29,13 @@ const calculateAge = (birthday: string) => {
   }
   return age;
 };
+
+const stateOptions = [
+  '', 'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
+];
+const colorOptions = [
+  '', 'Black', 'Yellow', 'Chocolate', 'Brown', 'White', 'Golden', 'Red', 'Cream', 'Gray', 'Other'
+];
 
 const Home: React.FC = () => {
   const [dogs, setDogs] = useState<Dog[]>([]);
@@ -74,6 +81,17 @@ const Home: React.FC = () => {
     } catch (error) {
       console.error('Error filtering dogs:', error);
     }
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      state: '',
+      min_weight: '',
+      max_weight: '',
+      min_age: '',
+      max_age: '',
+      color: ''
+    });
   };
 
   useEffect(() => {
@@ -124,59 +142,104 @@ const Home: React.FC = () => {
         </Button>
       </Grid>
 
-      <Paper elevation={3} sx={{ p: 2, mb: 3 }}>
+      <Paper elevation={3} sx={{ p: 3, mb: 3, borderRadius: 3, background: '#f9f9f9', border: '1px solid #e0e0e0' }}>
         <form onSubmit={handleFilterSubmit}>
-          <Grid container spacing={2}>
-            <TextField
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+            <Box sx={{ flex: '1 1 200px', minWidth: 180 }}>
+              <TextField
+                select
                 label="State"
                 name="state"
                 value={filters.state}
                 onChange={handleFilterChange}
                 fullWidth
-            />
-            <TextField
-                label="Min Weight"
-                name="min_weight"
-                value={filters.min_weight}
-                onChange={handleFilterChange}
-                type="number"
-                fullWidth
-            />
-            <TextField
-                label="Max Weight"
-                name="max_weight"
-                value={filters.max_weight}
-                onChange={handleFilterChange}
-                type="number"
-                fullWidth
-            />
-            <TextField
+                variant="outlined"
+                size="small"
+              >
+                {stateOptions.map((option) => (
+                  <MenuItem key={option} value={option}>{option || 'Any State'}</MenuItem>
+                ))}
+              </TextField>
+            </Box>
+            <Box sx={{ flex: '1 1 200px', minWidth: 180 }}>
+              <TextField
+                select
                 label="Color"
                 name="color"
                 value={filters.color}
                 onChange={handleFilterChange}
                 fullWidth
-            />
-            <TextField
-                label="Min Age"
+                variant="outlined"
+                size="small"
+              >
+                {colorOptions.map((option) => (
+                  <MenuItem key={option} value={option}>{option || 'Any Color'}</MenuItem>
+                ))}
+              </TextField>
+            </Box>
+            <Box sx={{ flex: '1 1 200px', minWidth: 180 }}>
+              <TextField
+                label="Min Weight (lbs)"
+                name="min_weight"
+                value={filters.min_weight}
+                onChange={handleFilterChange}
+                type="number"
+                fullWidth
+                variant="outlined"
+                size="small"
+                helperText=""
+              />
+            </Box>
+            <Box sx={{ flex: '1 1 200px', minWidth: 180 }}>
+              <TextField
+                label="Max Weight (lbs)"
+                name="max_weight"
+                value={filters.max_weight}
+                onChange={handleFilterChange}
+                type="number"
+                fullWidth
+                variant="outlined"
+                size="small"
+                helperText=""
+              />
+            </Box>
+            <Box sx={{ flex: '1 1 200px', minWidth: 180 }}>
+              <TextField
+                label="Min Age (years)"
                 name="min_age"
                 value={filters.min_age}
                 onChange={handleFilterChange}
                 type="number"
                 fullWidth
-            />
-            <TextField
-                label="Max Age"
+                variant="outlined"
+                size="small"
+                helperText=""
+              />
+            </Box>
+            <Box sx={{ flex: '1 1 200px', minWidth: 180 }}>
+              <TextField
+                label="Max Age (years)"
                 name="max_age"
                 value={filters.max_age}
                 onChange={handleFilterChange}
                 type="number"
                 fullWidth
-            />
-            <Button type="submit" variant="contained" color="primary" fullWidth>
-              Apply Filters
-            </Button>
-          </Grid>
+                variant="outlined"
+                size="small"
+                helperText=""
+              />
+            </Box>
+            <Box sx={{ flex: '1 1 200px', minWidth: 180 }}>
+              <Button type="submit" variant="contained" color="primary" fullWidth sx={{ height: 40 }}>
+                Apply Filters
+              </Button>
+            </Box>
+            <Box sx={{ flex: '1 1 200px', minWidth: 180 }}>
+              <Button variant="outlined" color="secondary" fullWidth sx={{ height: 40 }} onClick={handleClearFilters}>
+                Clear Filters
+              </Button>
+            </Box>
+          </Box>
         </form>
       </Paper>
 

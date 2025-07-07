@@ -20,3 +20,10 @@ venv.bak/
 # CDK Context & Staging files
 .cdk.staging/
 cdk.out/
+cdk.out
+/python/
+
+/backend/my-fastapi-lambda/
+my-fastapi-lambda/
+/backend/python/
+
