@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {fetchAuthSession} from 'aws-amplify/auth';
-import {Container, Typography, TextField, Button, Paper, MenuItem, Box, Dialog, DialogTitle, DialogContent, DialogActions} from '@mui/material';
+import {Container, Typography, TextField, Button, Paper, MenuItem, Box, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel} from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -33,6 +33,13 @@ const CreateDog: React.FC = () => {
     const [errorDetails, setErrorDetails] = useState<string | null>(null);
     const [openDialog, setOpenDialog] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [useAIGeneration, setUseAIGeneration] = useState(false);
+    const [aiDescription, setAIDescription] = useState('');
+    const [aiGenerating, setAIGenerating] = useState(false);
+    const [aiImageBase64, setAIImageBase64] = useState<string | null>(null);
+    const [aiError, setAIError] = useState<string | null>(null);
+    const [createdDogId, setCreatedDogId] = useState<string | null>(null);
+    const [createdDogImageUrl, setCreatedDogImageUrl] = useState<string | null>(null);
 
     const stateOptions = [
         '', 'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
@@ -55,47 +62,99 @@ const CreateDog: React.FC = () => {
         }
     };
 
+    const handleAIGenerate = async () => {
+        setAIGenerating(true);
+        setAIError(null);
+        setAIImageBase64(null);
+        try {
+            const apiUrl = import.meta.env.VITE_API_URL;
+            const response = await fetch(`${apiUrl}/ai/generate_image`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ description: aiDescription })
+            });
+            if (!response.ok) {
+                const errorJson = await response.json();
+                setAIError(errorJson.explanation || errorJson.message || 'Failed to generate image');
+                return;
+            }
+            const data = await response.json();
+            if (data.image_base64) {
+                setAIImageBase64(data.image_base64);
+            } else {
+                setAIError(data.explanation || 'No image generated');
+            }
+        } catch (err) {
+            setAIError('Error generating image');
+        } finally {
+            setAIGenerating(false);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        if (!file) {
-            setMessage('Please select an image file.');
-            setOpenDialog(true);
-            return;
+        setCreatedDogId(null);
+        setCreatedDogImageUrl(null);
+        if (useAIGeneration) {
+            if (!aiImageBase64) {
+                setMessage('Please generate an image first.');
+                setOpenDialog(true);
+                return;
+            }
+        } else {
+            if (!file) {
+                setMessage('Please select an image file.');
+                setOpenDialog(true);
+                return;
+            }
         }
-
         setLoading(true);
         try {
             const session = await fetchAuthSession();
             const token = session.tokens?.idToken?.toString();
             if (!token) throw new Error('No valid token found');
-
             const apiUrl = import.meta.env.VITE_API_URL;
-            const form = new FormData();
-
-            Object.entries(formData).forEach(([key, value]) => {
-                if (value) {
-                    if (key === 'breed_id' || key === 'weight') {
-                        const intValue = parseInt(value);
-                        if (!isNaN(intValue)) {
-                            form.append(key, String(intValue));
-                        }
-                    } else {
-                        form.append(key, value);
-                    }
+            let response;
+            if (useAIGeneration && aiImageBase64) {
+                // Send as base64
+                const payload: any = { ...formData, image_base64: aiImageBase64 };
+                // Remove empty breed_id to avoid validation error
+                if (!payload.breed_id || payload.breed_id === '') {
+                    delete payload['breed_id'];
                 }
-            });
-
-            form.append('file', file);
-
-            const response = await fetch(`${apiUrl}/dogs/create_with_image`, {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${token}`
-                },
-                body: form
-            });
-
+                response = await fetch(`${apiUrl}/dogs/create_with_generated_image`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+            } else {
+                const form = new FormData();
+                Object.entries(formData).forEach(([key, value]) => {
+                    if (value) {
+                        if (key === 'breed_id' || key === 'weight') {
+                            const intValue = parseInt(value);
+                            if (!isNaN(intValue)) {
+                                form.append(key, String(intValue));
+                            }
+                        } else {
+                            form.append(key, value);
+                        }
+                    }
+                });
+                if (file) {
+                    form.append('file', file);
+                }
+                response = await fetch(`${apiUrl}/dogs/create_with_image`, {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: form
+                });
+            }
             if (!response.ok) {
                 let errorMsg = 'Failed to create dog';
                 let errorDetailsMsg = null;
@@ -116,10 +175,18 @@ const CreateDog: React.FC = () => {
                 setOpenDialog(true);
                 return;
             }
-
             const data = await response.json();
             setMessage(`Dog created successfully with ID ${data.dog_id}`);
             setOpenDialog(true);
+            setCreatedDogId(data.dog_id);
+            // Fetch the image URL for the created dog
+            const imageResp = await fetch(`${apiUrl}/dogs/${data.dog_id}/image`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (imageResp.ok) {
+                const imageData = await imageResp.json();
+                setCreatedDogImageUrl(imageData.url);
+            }
             navigate(`/dogs/${data.dog_id}`);
         } catch (error) {
             console.error('Error creating dog:', error);
@@ -177,6 +244,11 @@ const CreateDog: React.FC = () => {
                             <Typography sx={{fontWeight: 500, mb: 1, color: message.startsWith('Dog created') ? 'green' : 'red'}}>
                                 {message}
                             </Typography>
+                            {createdDogImageUrl && (
+                                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                                    <img src={createdDogImageUrl} alt="Created Dog" style={{ maxWidth: 200, maxHeight: 200, borderRadius: 8, border: '1px solid #ccc' }} />
+                                </Box>
+                            )}
                             {errorDetails && getDetectedLabels().length > 0 && (
                                 <Box sx={{mt: 2}}>
                                     <Typography variant="subtitle2" sx={{mb: 1, color: 'gray'}}>Detected in your image:</Typography>
@@ -242,11 +314,44 @@ const CreateDog: React.FC = () => {
                                 </TextField>
                             </Box>
                             <Typography variant="h6" sx={{mt: 2, mb: 1}}>Dog Image</Typography>
-                            <Button variant="contained" component="label" fullWidth sx={{mb: 1}}>
-                                Upload Image
-                                <input type="file" hidden accept="image/*" onChange={handleFileChange} required/>
-                            </Button>
-                            {imagePreview && (
+                            <FormControlLabel
+                                control={<Switch checked={useAIGeneration} onChange={e => setUseAIGeneration(e.target.checked)} />}
+                                label="Generate with AI"
+                                sx={{mb: 1}}
+                            />
+                            {useAIGeneration ? (
+                                <>
+                                    <TextField
+                                        fullWidth
+                                        label="Image Description"
+                                        value={aiDescription}
+                                        onChange={e => setAIDescription(e.target.value)}
+                                        placeholder="e.g. A happy black Labrador puppy in a park"
+                                        size="small"
+                                        sx={{mb: 1}}
+                                    />
+                                    <Button
+                                        variant="contained"
+                                        onClick={handleAIGenerate}
+                                        disabled={aiGenerating || !aiDescription}
+                                        sx={{mb: 1}}
+                                    >
+                                        {aiGenerating ? 'Generating...' : 'Generate Image'}
+                                    </Button>
+                                    {aiError && <Typography color="error" sx={{mb: 1}}>{aiError}</Typography>}
+                                    {aiImageBase64 && (
+                                        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                                            <img src={`data:image/png;base64,${aiImageBase64}`} alt="Generated Preview" style={{ maxWidth: 200, maxHeight: 200, borderRadius: 8, border: '1px solid #ccc' }} />
+                                        </Box>
+                                    )}
+                                </>
+                            ) : (
+                                <Button variant="contained" component="label" fullWidth sx={{mb: 1}}>
+                                    Upload Image
+                                    <input type="file" hidden accept="image/*" onChange={handleFileChange} required={!useAIGeneration} disabled={useAIGeneration}/>
+                                </Button>
+                            )}
+                            {(!useAIGeneration && imagePreview) && (
                                 <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
                                     <img src={imagePreview} alt="Preview" style={{ maxWidth: 200, maxHeight: 200, borderRadius: 8, border: '1px solid #ccc' }} />
                                 </Box>
