@@ -4,6 +4,7 @@ import {Favorite as FavoriteIcon, ThumbDown as ThumbDownIcon, ArrowBack as Arrow
 import {type Dog} from '../types/Dog';
 import {useParams, useNavigate} from 'react-router-dom';
 import { fetchAuthSession } from 'aws-amplify/auth';
+import { useAuthenticator } from '@aws-amplify/ui-react';
 
 function DogDetail() {
 
@@ -15,6 +16,7 @@ function DogDetail() {
     const [message, setMessage] = useState<string | null>(null);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [loadingAction, setLoadingAction] = useState(false);
+    const { user } = useAuthenticator((context) => [context.user]);
 
     useEffect(() => {
         const fetchDog = async () => {
@@ -197,30 +199,32 @@ function DogDetail() {
                 </Box>
 
                 {/* Action Buttons */}
-                <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, mb: 3 }}>
-                    <Button
-                        variant="contained"
-                        color="success"
-                        onClick={handleWag}
-                        disabled={loadingAction}
-                        startIcon={<FavoriteIcon />}
-                        size="large"
-                        sx={{ px: 4, py: 1.5 }}
-                    >
-                        Wag ({dog.wags})
-                    </Button>
-                    <Button
-                        variant="contained"
-                        color="error"
-                        onClick={handleGrowl}
-                        disabled={loadingAction}
-                        startIcon={<ThumbDownIcon />}
-                        size="large"
-                        sx={{ px: 4, py: 1.5 }}
-                    >
-                        Growl ({dog.growls})
-                    </Button>
-                </Box>
+                {user && (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, mb: 3 }}>
+                        <Button
+                            variant="contained"
+                            color="success"
+                            onClick={handleWag}
+                            disabled={loadingAction}
+                            startIcon={<FavoriteIcon />}
+                            size="large"
+                            sx={{ px: 4, py: 1.5 }}
+                        >
+                            Wag ({dog.wags})
+                        </Button>
+                        <Button
+                            variant="contained"
+                            color="error"
+                            onClick={handleGrowl}
+                            disabled={loadingAction}
+                            startIcon={<ThumbDownIcon />}
+                            size="large"
+                            sx={{ px: 4, py: 1.5 }}
+                        >
+                            Growl ({dog.growls})
+                        </Button>
+                    </Box>
+                )}
 
                 {message && <Alert severity="success" sx={{ mb: 2 }}>{message}</Alert>}
                 {errorMsg && <Alert severity="error" sx={{ mb: 2 }}>{errorMsg}</Alert>}

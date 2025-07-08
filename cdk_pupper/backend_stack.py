@@ -47,6 +47,8 @@ class BackendStack(Stack):
                                               "DB_SECRET_ARN": db_instance.secret.secret_arn,
                                               "DB_HOST": db_instance.db_instance_endpoint_address,
                                               "BUCKET_NAME": buckets["original"].bucket_name,
+                                              "FERNET_KEY": "H_2p9clY89N59AsHb-faCsZ1z4qng-0f9xj1eN8nDgE="
+
                                           },
                                           vpc=vpc,
                                           vpc_subnets=ec2.SubnetSelection(
@@ -68,6 +70,13 @@ class BackendStack(Stack):
                 ]
             )
         )
+        backend_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["bedrock:InvokeModel"],
+                resources=["arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-7-sonnet-20250219-v1:0"]
+            )
+        )
+
         # Permissions
         db_instance.secret.grant_read(backend_lambda)
         buckets["original"].grant_read_write(backend_lambda)

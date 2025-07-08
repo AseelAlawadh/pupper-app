@@ -16,6 +16,8 @@ import {
   Cake as CakeIcon,
   Scale as ScaleIcon
 } from '@mui/icons-material';
+import { useAuthenticator } from '@aws-amplify/ui-react';
+
 
 interface Dog {
   dog_id: string;
@@ -64,6 +66,7 @@ const Home: React.FC = () => {
   });
 
   const navigate = useNavigate();
+  const { user } = useAuthenticator((context) => [context.user]);
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
@@ -110,18 +113,18 @@ const Home: React.FC = () => {
   useEffect(() => {
     const fetchDogs = async () => {
       try {
-        const session = await fetchAuthSession();
-        const token = session.tokens?.idToken?.toString();
+        let token: string | undefined = undefined;
+        try {
+          const session = await fetchAuthSession();
+          token = session.tokens?.idToken?.toString();
+        } catch (e) {
+          // Not signed in, that's fine
+        }
         const apiUrl = import.meta.env.VITE_API_URL;
-
-        if (!token) throw new Error('No valid token found');
-
-        const response = await fetch(`${apiUrl}/dogs`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
+        const headers: Record<string, string> = {};
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+        const response = await fetch(`${apiUrl}/dogs`, { headers });
         if (!response.ok) throw new Error('Failed to fetch dogs');
-
         const data = await response.json();
         setDogs(data);
       } catch (error) {
@@ -131,7 +134,6 @@ const Home: React.FC = () => {
         setLoading(false);
       }
     };
-
     fetchDogs();
   }, []);
 
@@ -181,21 +183,23 @@ const Home: React.FC = () => {
           <Typography variant="h6" sx={{ mb: 3, opacity: 0.9 }}>
             Discover amazing Labrador Retrievers waiting for their forever homes
           </Typography>
-          <Button
-            variant="contained"
-            size="large"
-            onClick={() => navigate('/create-dog')}
-            startIcon={<AddIcon />}
-            sx={{
-              backgroundColor: 'white',
-              color: '#2E7D32',
-              '&:hover': { backgroundColor: '#f5f5f5' },
-              px: 4,
-              py: 1.5
-            }}
-          >
-            Add New Dog
-          </Button>
+          {user && (
+            <Button
+              variant="contained"
+              size="large"
+              onClick={() => navigate('/create-dog')}
+              startIcon={<AddIcon />}
+              sx={{
+                backgroundColor: 'white',
+                color: '#2E7D32',
+                '&:hover': { backgroundColor: '#f5f5f5' },
+                px: 4,
+                py: 1.5
+              }}
+            >
+              Add New Dog
+            </Button>
+          )}
         </Box>
 
         {/* Filter Section */}
