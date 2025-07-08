@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {Typography, Box, Button, Alert, Container, Paper, Skeleton, Card, CardMedia} from '@mui/material';
+import {Typography, Box, Button, Alert, Container, Paper, Skeleton, Card, CardMedia, Chip} from '@mui/material';
 import {Favorite as FavoriteIcon, ThumbDown as ThumbDownIcon, ArrowBack as ArrowBackIcon, LocationOn as LocationIcon, Cake as CakeIcon, Scale as ScaleIcon, Pets as PetsIcon} from '@mui/icons-material';
 import {type Dog} from '../types/Dog';
 import {useParams, useNavigate} from 'react-router-dom';
@@ -239,6 +239,28 @@ function DogDetail() {
                     <Typography variant="body1" sx={{ lineHeight: 1.8, fontSize: '1.1rem' }}>
                         {dog.description}
                     </Typography>
+                    
+                    {dog.sentiment_tags && dog.sentiment_tags.length > 0 && (
+                        <Box sx={{ mt: 3 }}>
+                            <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
+                                Personality Tags:
+                            </Typography>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                {dog.sentiment_tags.map((tag, index) => (
+                                    <Chip
+                                        key={index}
+                                        label={tag}
+                                        size="medium"
+                                        sx={{
+                                            backgroundColor: 'primary.light',
+                                            color: 'white',
+                                            fontWeight: 500
+                                        }}
+                                    />
+                                ))}
+                            </Box>
+                        </Box>
+                    )}
                 </Paper>
             )}
 

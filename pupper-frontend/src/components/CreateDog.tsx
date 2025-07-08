@@ -38,7 +38,7 @@ const CreateDog: React.FC = () => {
     const [aiGenerating, setAIGenerating] = useState(false);
     const [aiImageBase64, setAIImageBase64] = useState<string | null>(null);
     const [aiError, setAIError] = useState<string | null>(null);
-    const [createdDogId, setCreatedDogId] = useState<string | null>(null);
+
     const [createdDogImageUrl, setCreatedDogImageUrl] = useState<string | null>(null);
 
     const stateOptions = [
@@ -93,7 +93,7 @@ const CreateDog: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setCreatedDogId(null);
+
         setCreatedDogImageUrl(null);
         if (useAIGeneration) {
             if (!aiImageBase64) {
@@ -178,7 +178,7 @@ const CreateDog: React.FC = () => {
             const data = await response.json();
             setMessage(`Dog created successfully with ID ${data.dog_id}`);
             setOpenDialog(true);
-            setCreatedDogId(data.dog_id);
+
             // Fetch the image URL for the created dog
             const imageResp = await fetch(`${apiUrl}/dogs/${data.dog_id}/image`, {
                 headers: { Authorization: `Bearer ${token}` }

@@ -73,7 +73,17 @@ class BackendStack(Stack):
         backend_lambda.add_to_role_policy(
             iam.PolicyStatement(
                 actions=["bedrock:InvokeModel"],
-                resources=["arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-7-sonnet-20250219-v1:0"]
+                resources=[
+                    "arn:aws:bedrock:*::foundation-model/*",
+                    f"arn:aws:bedrock:*:{self.account}:inference-profile/*"
+                ]
+            )
+        )
+        
+        backend_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["rekognition:DetectLabels"],
+                resources=["*"]
             )
         )
 

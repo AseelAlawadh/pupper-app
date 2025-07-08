@@ -11,6 +11,7 @@ export interface Dog {
     birthday: string;
     weight: number;
     color: string;
+    sentiment_tags?: string[];
     image_url: string;
     original_key: string;
     resized_400_key: string;
