@@ -1,10 +1,14 @@
 import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {fetchAuthSession} from 'aws-amplify/auth';
-import {Container, Typography, TextField, Button, Paper, MenuItem, Alert, Box} from '@mui/material';
+import {Container, Typography, TextField, Button, Paper, MenuItem, Box, Dialog, DialogTitle, DialogContent, DialogActions} from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import { Chip, Stack } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
 
 const CreateDog: React.FC = () => {
     const navigate = useNavigate();
@@ -26,6 +30,9 @@ const CreateDog: React.FC = () => {
     const [file, setFile] = useState<File | null>(null);
     const [message, setMessage] = useState('');
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [errorDetails, setErrorDetails] = useState<string | null>(null);
+    const [openDialog, setOpenDialog] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const stateOptions = [
         '', 'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
@@ -53,9 +60,11 @@ const CreateDog: React.FC = () => {
 
         if (!file) {
             setMessage('Please select an image file.');
+            setOpenDialog(true);
             return;
         }
 
+        setLoading(true);
         try {
             const session = await fetchAuthSession();
             const token = session.tokens?.idToken?.toString();
@@ -88,32 +97,101 @@ const CreateDog: React.FC = () => {
             });
 
             if (!response.ok) {
-                const errorText = await response.text();
-                console.error('Backend Error response:', errorText);
-                throw new Error('Failed to create dog');
+                let errorMsg = 'Failed to create dog';
+                let errorDetailsMsg = null;
+                try {
+                    const errorJson = await response.json();
+                    if (errorJson.error === 'Image is not a Labrador Retriever' && errorJson.rekognition_result) {
+                        errorMsg = errorJson.message;
+                        errorDetailsMsg = `Detected labels: ${errorJson.rekognition_result.explanation}`;
+                    } else if (errorJson.message) {
+                        errorMsg = errorJson.message;
+                    }
+                } catch (err) {
+                    const errorText = await response.text();
+                    errorMsg = errorText;
+                }
+                setMessage(errorMsg);
+                setErrorDetails(errorDetailsMsg);
+                setOpenDialog(true);
+                return;
             }
 
             const data = await response.json();
             setMessage(`Dog created successfully with ID ${data.dog_id}`);
+            setOpenDialog(true);
             navigate(`/dogs/${data.dog_id}`);
         } catch (error) {
             console.error('Error creating dog:', error);
             setMessage('Error creating dog');
+        } finally {
+            setLoading(false);
         }
+    };
+
+    // Helper to parse detected labels from errorDetails
+    const getDetectedLabels = () => {
+        if (!errorDetails) return [];
+        // errorDetails: 'Detected labels: Dog (99%), Golden Retriever (98%)'
+        const match = errorDetails.match(/Detected labels: (.*)/);
+        if (!match) return [];
+        return match[1].split(',').map(label => label.trim());
     };
 
     return (
         <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <Container maxWidth="sm" sx={{mt: 4}}>
+            <Container maxWidth="sm" sx={{mt: 4, position: 'relative'}}>
+                {loading && (
+                    <Box sx={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        bgcolor: 'rgba(255,255,255,0.7)',
+                        zIndex: 10,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: 3
+                    }}>
+                        <CircularProgress color="primary" size={60} />
+                        <Typography sx={{mt: 2, fontWeight: 500}}>Uploading and validating...</Typography>
+                    </Box>
+                )}
                 <Paper elevation={3} sx={{p: 4, borderRadius: 3, background: '#f9f9f9', border: '1px solid #e0e0e0'}}>
                     <Typography variant="h4" gutterBottom align="center" sx={{mb: 2}}>
                         Create New Dog
                     </Typography>
-                    {message && (
-                        <Alert severity={message.startsWith('Dog created') ? 'success' : 'error'} sx={{mb: 2}}>
-                            {message}
-                        </Alert>
-                    )}
+                    <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+                        <DialogTitle sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                            {message.startsWith('Dog created') ? (
+                                <CheckCircleIcon color="success" sx={{fontSize: 32}} />
+                            ) : (
+                                <ErrorOutlineIcon color="error" sx={{fontSize: 32}} />
+                            )}
+                            {message.startsWith('Dog created') ? 'Dog Created!' : 'Oops!'}
+                        </DialogTitle>
+                        <DialogContent>
+                            <Typography sx={{fontWeight: 500, mb: 1, color: message.startsWith('Dog created') ? 'green' : 'red'}}>
+                                {message}
+                            </Typography>
+                            {errorDetails && getDetectedLabels().length > 0 && (
+                                <Box sx={{mt: 2}}>
+                                    <Typography variant="subtitle2" sx={{mb: 1, color: 'gray'}}>Detected in your image:</Typography>
+                                    <Stack direction="row" spacing={1} flexWrap="wrap">
+                                        {getDetectedLabels().map((label, idx) => (
+                                            <Chip key={idx} label={label} color="default" variant="outlined" />
+                                        ))}
+                                    </Stack>
+                                </Box>
+                            )}
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={() => setOpenDialog(false)} color="primary" variant="contained">Close</Button>
+                        </DialogActions>
+                    </Dialog>
                     <form onSubmit={handleSubmit}>
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                             <Typography variant="h6" sx={{mb: 1}}>Shelter Information</Typography>
@@ -173,7 +251,7 @@ const CreateDog: React.FC = () => {
                                     <img src={imagePreview} alt="Preview" style={{ maxWidth: 200, maxHeight: 200, borderRadius: 8, border: '1px solid #ccc' }} />
                                 </Box>
                             )}
-                            <Button type="submit" variant="contained" color="primary" fullWidth sx={{mt: 2}}>
+                            <Button type="submit" variant="contained" color="primary" fullWidth sx={{mt: 2}} disabled={loading}>
                                 Create Dog
                             </Button>
                         </Box>
