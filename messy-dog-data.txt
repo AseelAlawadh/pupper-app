@@ -1,0 +1,23 @@
+SHELTER INTAKE FORM - MESSY DATA
+
+shelter: city animal control
+location: somewhere in texas, maybe dallas?
+dog name: max or maybe it was mAX
+breed: lab mix (looks like labrador retriever to me)
+color: brownish golden
+weight: thirty two lbs or 32 pounds
+age: born 2019 april
+came to shelter: 12/15/2023
+
+notes about dog:
+very good boy, loves people, house broken mostly, knows some tricks, barks sometimes but not too much, good with other animals, needs exercise daily
+
+health:
+shots up to date
+fixed
+microchip: yes
+
+other stuff:
+previous owner moved and couldn't take him
+friendly personality
+medium energy level

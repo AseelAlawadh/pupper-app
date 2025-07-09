@@ -11,8 +11,34 @@ import { getCurrentUser } from 'aws-amplify/auth';
 import Home from './components/Home';
 import DogDetail from "./components/DogDetail";
 import CreateDog from './components/CreateDog';
+import CreateDogShelter from './components/CreateDogShelter';
+import ExtractText from './components/ExtractText';
 import DogMatcher from './components/DogMatcher';
 import MyDogs from './components/MyDogs';
+
+// Router component to choose between regular and shelter create dog
+const CreateDogRouter = () => {
+    const [userType, setUserType] = useState<string | null>(null);
+    
+    useEffect(() => {
+        const checkUserType = async () => {
+            try {
+                const { fetchUserAttributes } = await import('aws-amplify/auth');
+                const attributes = await fetchUserAttributes();
+                setUserType(attributes['custom:user_type'] || 'regular');
+            } catch (error) {
+                setUserType('regular');
+            }
+        };
+        checkUserType();
+    }, []);
+    
+    if (userType === 'shelter') {
+        return <CreateDogShelter />;
+    }
+    
+    return <CreateDog />;
+};
 
 // Create a custom theme
 const theme = createTheme({
@@ -124,11 +150,17 @@ function App() {
                 order: 3,
                 label: 'Last Name',
             },
+            'custom:user_type': {
+                order: 4,
+                label: 'Account Type',
+                placeholder: 'Select your account type',
+                isRequired: true
+            },
             password: {
-                order: 4
+                order: 5
             },
             confirm_password: {
-                order: 5
+                order: 6
             }
         }
     };
@@ -156,6 +188,7 @@ function App() {
                                 <Box sx={{ display: 'flex', gap: 1 }}>
                                     <Button component={Link} to="/" sx={{ color: 'white' }}>Home</Button>
                                     <Button component={Link} to="/create-dog" sx={{ color: 'white' }}>Add Dog</Button>
+                                    <Button component={Link} to="/extract-text" sx={{ color: 'white' }}>Extract Text</Button>
                                     <Button component={Link} to="/match" sx={{ color: 'white' }}>Match</Button>
                                     <Button component={Link} to="/my-dogs" sx={{ color: 'white' }}>My Dogs</Button>
                                 </Box>
@@ -186,7 +219,8 @@ function App() {
                             <Routes>
                                 <Route path="/" element={<Home />} />
                                 <Route path="/dogs/:id" element={<DogDetail />} />
-                                <Route path="/create-dog" element={<CreateDog />} />
+                                <Route path="/create-dog" element={<CreateDogRouter />} />
+                                <Route path="/extract-text" element={<ExtractText />} />
                                 <Route path="/match" element={<DogMatcher />} />
                                 <Route path="/my-dogs" element={<MyDogs />} />
                             </Routes>

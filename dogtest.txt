@@ -1,0 +1,9 @@
+Dog Name: Buddy
+Shelter: Happy Paws Shelter  
+City: Seattle
+State: WA
+Species: Labrador Retriever
+Description: Friendly and energetic dog
+Birthday: 2020-05-15
+Weight: 65
+Color: Yellow

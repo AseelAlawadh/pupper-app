@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {fetchAuthSession} from 'aws-amplify/auth';
 import {Container, Typography, TextField, Button, Paper, MenuItem, Box, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel} from '@mui/material';
@@ -33,6 +33,21 @@ const CreateDog: React.FC = () => {
     const [errorDetails, setErrorDetails] = useState<string | null>(null);
     const [openDialog, setOpenDialog] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [isShelterUser, setIsShelterUser] = useState(false);
+    
+    useEffect(() => {
+        const checkUserType = async () => {
+            try {
+                const { fetchUserAttributes } = await import('aws-amplify/auth');
+                const attributes = await fetchUserAttributes();
+                const userType = attributes['custom:user_type'];
+                setIsShelterUser(userType === 'shelter');
+            } catch (error) {
+                console.log('Could not fetch user attributes:', error);
+            }
+        };
+        checkUserType();
+    }, []);
     const [useAIGeneration, setUseAIGeneration] = useState(false);
     const [aiDescription, setAIDescription] = useState('');
     const [aiGenerating, setAIGenerating] = useState(false);
@@ -296,7 +311,16 @@ const CreateDog: React.FC = () => {
                                 </TextField>
                             </Box>
                             <Typography variant="h6" sx={{mt: 2, mb: 1}}>Dog Information</Typography>
-                            <TextField fullWidth label="Name" name="name" value={formData.name} onChange={handleChange} required size="small"/>
+                            <TextField 
+                                fullWidth 
+                                label="Name" 
+                                name="name" 
+                                value={formData.name} 
+                                onChange={handleChange} 
+                                required={!isShelterUser}
+                                helperText={isShelterUser ? "Optional for shelter users" : ""}
+                                size="small"
+                            />
                             <TextField select fullWidth label="Species" name="species" value={formData.species} onChange={handleChange} required size="small">
                                 {speciesOptions.map((option) => (
                                     <MenuItem key={option} value={option}>{option || 'Any Species'}</MenuItem>
@@ -338,11 +362,13 @@ const CreateDog: React.FC = () => {
                                 label="Generate with AI"
                                 sx={{mb: 1}}
                             />
-                            <FormControlLabel
-                                control={<Switch checked={useDocumentUpload} onChange={e => setUseDocumentUpload(e.target.checked)} />}
-                                label="Upload Document + Image"
-                                sx={{mb: 1}}
-                            />
+                            {isShelterUser && (
+                                <FormControlLabel
+                                    control={<Switch checked={useDocumentUpload} onChange={e => setUseDocumentUpload(e.target.checked)} />}
+                                    label="📄 Upload Document + Image (Shelter Feature)"
+                                    sx={{mb: 1}}
+                                />
+                            )}
                             {useAIGeneration ? (
                                 <>
                                     <TextField
