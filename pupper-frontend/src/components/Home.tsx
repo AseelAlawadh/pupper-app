@@ -19,6 +19,7 @@ interface Dog {
   image_url: string;
   wags: number;
   growls: number;
+  sentiment_tags: string[];
   age?: number;
   city?: string;
   state?: string;
@@ -422,6 +423,29 @@ const Home: React.FC = () => {
                     }}
                   />
                 </Box>
+                
+                {dog.sentiment_tags && dog.sentiment_tags.length > 0 && (
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="caption" sx={{ color: '#456882', fontWeight: 600, mb: 1, display: 'block' }}>
+                      🎭 Personality:
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                      {dog.sentiment_tags.slice(0, 3).map((tag, index) => (
+                        <Chip
+                          key={index}
+                          label={tag}
+                          size="small"
+                          sx={{
+                            background: 'linear-gradient(45deg, #FF6F00 30%, #FFB74D 90%)',
+                            color: 'white',
+                            fontWeight: 500,
+                            fontSize: '0.7rem'
+                          }}
+                        />
+                      ))}
+                    </Box>
+                  </Box>
+                )}
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
