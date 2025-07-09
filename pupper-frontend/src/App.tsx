@@ -5,8 +5,9 @@ import '@aws-amplify/ui-react/styles.css';
 import {Amplify} from 'aws-amplify';
 import {Button, Box, Typography, ThemeProvider, createTheme, CssBaseline} from '@mui/material';
 import {Pets, Home as HomeIcon, Add as AddIcon, Logout as LogoutIcon, Menu as MenuIcon, Close as CloseIcon} from '@mui/icons-material';
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import {Drawer, List, ListItem, ListItemIcon, ListItemText, IconButton} from '@mui/material';
+import { getCurrentUser } from 'aws-amplify/auth';
 import Home from './components/Home';
 import DogDetail from "./components/DogDetail";
 import CreateDog from './components/CreateDog';
@@ -75,8 +76,25 @@ const theme = createTheme({
   },
 });
 
+
+
 function App() {
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [showAuth, setShowAuth] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    
+    useEffect(() => {
+        // Check if user is already authenticated
+        const checkAuth = async () => {
+            try {
+                await getCurrentUser();
+                setIsAuthenticated(true);
+            } catch {
+                setIsAuthenticated(false);
+            }
+        };
+        checkAuth();
+    }, []);
     const user_pool_id = import.meta.env.VITE_USER_POOL_ID;
     const client_id = import.meta.env.VITE_CLIENT_ID;
     console.log('User Pool ID:', user_pool_id);
@@ -114,6 +132,163 @@ function App() {
             }
         }
     };
+
+
+    // Show authenticated app if user is logged in
+    if (isAuthenticated) {
+        return (
+            <ThemeProvider theme={theme}>
+                <CssBaseline />
+                <Router>
+                    <Box sx={{ background: 'linear-gradient(135deg, #F9F3EF 0%, #D2C1B6 100%)', minHeight: '100vh' }}>
+                        <Box sx={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center', 
+                            p: 2, 
+                            background: 'linear-gradient(135deg, #1B3C53 0%, #456882 100%)',
+                            color: 'white'
+                        }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                                    🐕 Pupper Adoption
+                                </Typography>
+                                <Box sx={{ display: 'flex', gap: 1 }}>
+                                    <Button component={Link} to="/" sx={{ color: 'white' }}>Home</Button>
+                                    <Button component={Link} to="/create-dog" sx={{ color: 'white' }}>Add Dog</Button>
+                                    <Button component={Link} to="/match" sx={{ color: 'white' }}>Match</Button>
+                                    <Button component={Link} to="/my-dogs" sx={{ color: 'white' }}>My Dogs</Button>
+                                </Box>
+                            </Box>
+                            <Button 
+                                onClick={async () => {
+                                    try {
+                                        const { signOut } = await import('aws-amplify/auth');
+                                        await signOut();
+                                        setIsAuthenticated(false);
+                                        setShowAuth(false);
+                                    } catch (error) {
+                                        console.error('Error signing out:', error);
+                                    }
+                                }} 
+                                variant="contained" 
+                                sx={{ 
+                                    background: '#F9F3EF',
+                                    color: '#1B3C53',
+                                    fontWeight: 600,
+                                    '&:hover': { background: '#D2C1B6' }
+                                }}
+                            >
+                                😪 Logout
+                            </Button>
+                        </Box>
+                        <Box sx={{ p: 2 }}>
+                            <Routes>
+                                <Route path="/" element={<Home />} />
+                                <Route path="/dogs/:id" element={<DogDetail />} />
+                                <Route path="/create-dog" element={<CreateDog />} />
+                                <Route path="/match" element={<DogMatcher />} />
+                                <Route path="/my-dogs" element={<MyDogs />} />
+                            </Routes>
+                        </Box>
+                    </Box>
+                </Router>
+            </ThemeProvider>
+        );
+    }
+
+    // Show authentication screen if user clicked login
+    if (showAuth) {
+        return (
+            <ThemeProvider theme={theme}>
+                <CssBaseline />
+                <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #F9F3EF 0%, #D2C1B6 100%)' }}>
+                    <Authenticator
+                        formFields={formFields}
+                        components={{
+                            Header() {
+                                return (
+                                    <Box sx={{ textAlign: 'center', mb: 2 }}>
+                                        <Typography variant="h5" sx={{ fontWeight: 700, color: '#1B3C53' }}>
+                                            🐕 Pupper Adoption
+                                        </Typography>
+                                        <Button 
+                                            onClick={() => setShowAuth(false)}
+                                            sx={{ mt: 1, color: '#456882' }}
+                                        >
+                                            ← Back to Browse
+                                        </Button>
+                                    </Box>
+                                );
+                            }
+                        }}
+                    >
+                        {({ user }) => {
+                            console.log('Authenticator render - user:', user);
+                            
+                            // If user successfully logged in, update state and redirect
+                            if (user) {
+                                console.log('User found, updating state');
+                                // Use setTimeout to avoid state update during render
+                                setTimeout(() => {
+                                    setIsAuthenticated(true);
+                                    setShowAuth(false);
+                                }, 0);
+                                return <div>Login successful! Redirecting...</div>;
+                            }
+                            
+                            console.log('No user found, should show login forms');
+                            // This should never be reached as Authenticator handles the forms
+                            return <div>Authentication forms should appear here...</div>;
+                        }}
+                    </Authenticator>
+                </Box>
+            </ThemeProvider>
+        );
+    }
+
+    // Show public app by default
+    return (
+        <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <Router>
+                <Box sx={{ background: '#f5f5f5', minHeight: '100vh' }}>
+                    {/* Header with Login Button */}
+                    <Box sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center', 
+                        p: 2, 
+                        background: 'linear-gradient(135deg, #1B3C53 0%, #456882 100%)',
+                        color: 'white'
+                    }}>
+                        <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                            🐕 Pupper Adoption
+                        </Typography>
+                        <Button 
+                            onClick={() => setShowAuth(true)} 
+                            variant="contained" 
+                            sx={{ 
+                                background: '#F9F3EF',
+                                color: '#1B3C53',
+                                fontWeight: 600,
+                                '&:hover': { background: '#D2C1B6' }
+                            }}
+                        >
+                            🔐 Sign In / Sign Up
+                        </Button>
+                    </Box>
+                    <Box sx={{ p: 2 }}>
+                        <Routes>
+                            <Route path="/" element={<Home />} />
+                            <Route path="/dogs/:id" element={<DogDetail />} />
+                        </Routes>
+                    </Box>
+                </Box>
+            </Router>
+        </ThemeProvider>
+    );
+
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
@@ -156,12 +331,33 @@ function App() {
                         return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 200 }}><span>Loading user session...</span></Box>;
                     }
                     
-                    const navItems = [
-                        { text: '🏠 Home', icon: <HomeIcon />, path: '/' },
-                        { text: '➕ Add Dog', icon: <AddIcon />, path: '/create-dog' },
-                        { text: '💕 Match Dogs', icon: <Pets />, path: '/match' },
-                        { text: '🐕 My Dogs', icon: <Pets />, path: '/my-dogs' }
-                    ];
+                    // Determine user role based on email or attributes
+                    const userEmail = user.signInDetails?.loginId || user.username || '';
+                    const isShelterUser = userEmail.includes('shelter') || userEmail.includes('admin');
+                    
+                    // Navigation items based on user type
+                    const getNavItems = () => {
+                        const baseItems = [
+                            { text: '🏠 Home', icon: <HomeIcon />, path: '/' },
+                            { text: '💕 Match Dogs', icon: <Pets />, path: '/match' },
+                            { text: '🐕 My Dogs', icon: <Pets />, path: '/my-dogs' }
+                        ];
+                        
+                        if (isShelterUser) {
+                            return [
+                                ...baseItems,
+                                { text: '➕ Add Dog', icon: <AddIcon />, path: '/create-dog' },
+                                { text: '📄 Text Extract', icon: <AddIcon />, path: '/extract-text' }
+                            ];
+                        } else {
+                            return [
+                                ...baseItems,
+                                { text: '➕ Add Dog', icon: <AddIcon />, path: '/create-dog' }
+                            ];
+                        }
+                    };
+                    
+                    const navItems = getNavItems();
                     
                     return (
                         <>

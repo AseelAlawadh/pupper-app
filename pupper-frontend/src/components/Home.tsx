@@ -11,9 +11,6 @@ import {
   Clear as ClearIcon,
   Add as AddIcon,
 } from '@mui/icons-material';
-import { useAuthenticator } from '@aws-amplify/ui-react';
-
-
 interface Dog {
   dog_id: string;
   name: string;
@@ -61,7 +58,21 @@ const Home: React.FC = () => {
   });
 
   const navigate = useNavigate();
-  const { user } = useAuthenticator((context) => [context.user]);
+  // Check if user is authenticated
+  const [user, setUser] = useState<any>(null);
+  
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { getCurrentUser } = await import('aws-amplify/auth');
+        const currentUser = await getCurrentUser();
+        setUser(currentUser);
+      } catch {
+        setUser(null);
+      }
+    };
+    checkAuth();
+  }, []);
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });

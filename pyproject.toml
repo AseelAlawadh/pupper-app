@@ -1,7 +1,17 @@
-[tool.black]
-line-length = 88
-target-version = ['py312']
+[project]
+name = "cdk-pupper"
+version = "0.1.0"
+description = "CDK infrastructure for Pupper app"
+requires-python = ">=3.8"
+dependencies = [
+    "aws-cdk-lib>=2.0.0",
+    "constructs>=10.0.0",
+]
 
-[tool.pytest.ini_options]
-testpaths = ["tests", "backend/app"]
-python_files = "test_*.py"
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["cdk_pupper*"]
+exclude = ["backend*", "pupper-frontend*"]

@@ -26,9 +26,13 @@ const MyDogs: React.FC = () => {
         try {
             const session = await fetchAuthSession();
             const token = session.tokens?.idToken?.toString();
-            if (!token) return;
+            if (!token) {
+                console.error('No token found');
+                return;
+            }
 
             const apiUrl = import.meta.env.VITE_API_URL;
+            console.log('Fetching from:', `${apiUrl}/dogs/wagged`);
             
             const [waggedResponse, growledResponse] = await Promise.all([
                 fetch(`${apiUrl}/dogs/wagged`, {
@@ -39,11 +43,22 @@ const MyDogs: React.FC = () => {
                 })
             ]);
 
+            console.log('Wagged response status:', waggedResponse.status);
+            console.log('Growled response status:', growledResponse.status);
+
             if (waggedResponse.ok) {
-                setWaggedDogs(await waggedResponse.json());
+                const waggedData = await waggedResponse.json();
+                console.log('Wagged dogs data:', waggedData);
+                setWaggedDogs(waggedData);
+            } else {
+                console.error('Wagged response error:', await waggedResponse.text());
             }
             if (growledResponse.ok) {
-                setGrowledDogs(await growledResponse.json());
+                const growledData = await growledResponse.json();
+                console.log('Growled dogs data:', growledData);
+                setGrowledDogs(growledData);
+            } else {
+                console.error('Growled response error:', await growledResponse.text());
             }
         } catch (error) {
             console.error('Error fetching my dogs:', error);
@@ -53,23 +68,48 @@ const MyDogs: React.FC = () => {
     };
 
     const renderDogs = (dogs: Dog[]) => (
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 3, mt: 3 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 4, mt: 3 }}>
             {dogs.map((dog) => (
-                <Card key={dog.dog_id}>
+                <Card 
+                    key={dog.dog_id} 
+                    sx={{
+                        borderRadius: 4,
+                        background: 'linear-gradient(135deg, #F9F3EF 0%, rgba(249, 243, 239, 0.8) 100%)',
+                        border: '2px solid rgba(27, 60, 83, 0.1)',
+                        boxShadow: '0 8px 25px rgba(27, 60, 83, 0.15)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                            transform: 'translateY(-8px)',
+                            boxShadow: '0 15px 40px rgba(27, 60, 83, 0.25)'
+                        }
+                    }}
+                >
                     <CardMedia
                         component="img"
-                        height="200"
+                        height="220"
                         image={dog.image_url || 'https://via.placeholder.com/300x200?text=No+Image'}
                         alt={dog.name}
+                        sx={{ objectFit: 'cover' }}
                     />
-                    <CardContent>
-                        <Typography variant="h6">{dog.name}</Typography>
-                        <Typography variant="body2" color="text.secondary">
+                    <CardContent sx={{ p: 3 }}>
+                        <Typography variant="h5" sx={{ fontWeight: 700, color: '#1B3C53', mb: 1, textAlign: 'center' }}>
+                            🐶 {dog.name}
+                        </Typography>
+                        <Typography variant="body1" sx={{ color: '#456882', fontWeight: 600, textAlign: 'center', mb: 2 }}>
                             {dog.breed} • {dog.age} years old
                         </Typography>
-                        <Typography variant="body2" sx={{ mt: 1 }}>
-                            👍 {dog.wags} wags • 👎 {dog.growls} growls
-                        </Typography>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-around', background: 'rgba(255, 255, 255, 0.7)', borderRadius: 3, p: 2 }}>
+                            <Box sx={{ textAlign: 'center' }}>
+                                <Typography sx={{ fontSize: '1.5rem' }}>🐕❤️</Typography>
+                                <Typography variant="h6" sx={{ color: '#1B3C53', fontWeight: 700 }}>{dog.wags}</Typography>
+                                <Typography variant="caption" sx={{ color: '#456882' }}>wags</Typography>
+                            </Box>
+                            <Box sx={{ textAlign: 'center' }}>
+                                <Typography sx={{ fontSize: '1.5rem' }}>😤</Typography>
+                                <Typography variant="h6" sx={{ color: '#1B3C53', fontWeight: 700 }}>{dog.growls}</Typography>
+                                <Typography variant="caption" sx={{ color: '#456882' }}>growls</Typography>
+                            </Box>
+                        </Box>
                     </CardContent>
                 </Card>
             ))}

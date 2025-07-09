@@ -19,6 +19,8 @@ export interface Dog {
     created_at: string;
     wags: number;
     growls: number;
+    user_wagged?: boolean;
+    user_growled?: boolean;
     images: string[];
 }
 

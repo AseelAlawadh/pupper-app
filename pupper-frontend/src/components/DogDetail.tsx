@@ -1,10 +1,10 @@
 import {useEffect, useState} from 'react';
 import {Typography, Box, Button, Alert, Container, Paper, Skeleton, Card, CardMedia, Chip} from '@mui/material';
-import {Favorite as FavoriteIcon, ThumbDown as ThumbDownIcon, ArrowBack as ArrowBackIcon, LocationOn as LocationIcon, Cake as CakeIcon, Scale as ScaleIcon, Pets as PetsIcon} from '@mui/icons-material';
+import {ArrowBack as ArrowBackIcon, Pets as PetsIcon} from '@mui/icons-material';
 import {type Dog} from '../types/Dog';
 import {useParams, useNavigate} from 'react-router-dom';
 import { fetchAuthSession } from 'aws-amplify/auth';
-import { useAuthenticator } from '@aws-amplify/ui-react';
+
 
 function DogDetail() {
 
@@ -16,30 +16,62 @@ function DogDetail() {
     const [message, setMessage] = useState<string | null>(null);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [loadingAction, setLoadingAction] = useState(false);
-    const { user } = useAuthenticator((context) => [context.user]);
+    // Check if user is authenticated
+    const [user, setUser] = useState<any>(null);
+    
+    useEffect(() => {
+        const checkAuth = async () => {
+            try {
+                const { getCurrentUser } = await import('aws-amplify/auth');
+                const currentUser = await getCurrentUser();
+                setUser(currentUser);
+            } catch {
+                setUser(null);
+            }
+        };
+        checkAuth();
+    }, []);
 
     useEffect(() => {
         const fetchDog = async () => {
             try {
-                const session = await fetchAuthSession();
-                const token = session.tokens?.idToken?.toString();
-                if (!token) throw new Error('No valid token found');
-                const response = await fetch(`${apiUrl}/dogs/${id}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
+                let response;
+                
+                // Try authenticated endpoint first if user is logged in
+                if (user) {
+                    try {
+                        const session = await fetchAuthSession();
+                        const token = session.tokens?.idToken?.toString();
+                        if (token) {
+                            response = await fetch(`${apiUrl}/dogs/${id}/auth`, {
+                                headers: { Authorization: `Bearer ${token}` }
+                            });
+                        }
+                    } catch (authError) {
+                        console.log('Auth failed, using public endpoint');
                     }
-                });
+                }
+                
+                // Use public endpoint if auth failed or no user
+                if (!response || !response.ok) {
+                    response = await fetch(`${apiUrl}/dogs/${id}`);
+                }
+                
+                if (!response.ok) {
+                    throw new Error('Dog not found');
+                }
+                
                 const data = await response.json();
                 console.log("Dog:", data);
                 setDog(data);
             } catch (error) {
-                console.error('Error fetching dogs:', error);
+                console.error('Error fetching dog:', error);
             } finally {
                 setLoading(false);
             }
         };
         fetchDog();
-    }, [id]);
+    }, [id, user]);
 
     const handleWag = async () => {
         if (!dog) return;
