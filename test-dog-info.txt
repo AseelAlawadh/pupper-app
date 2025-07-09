@@ -1,0 +1,23 @@
+DOG ADOPTION FORM
+
+Shelter Information:
+Shelter Name: Happy Paws Animal Rescue
+City: Charlotte
+State: North Carolina
+
+Dog Information:
+Name: Buddy
+Species: Labrador Retriever
+Color: Golden Brown
+Weight: forty-five pounds
+Birthday: March 15, 2020
+Shelter Entry Date: January 10, 2024
+
+Description:
+Buddy is a friendly and energetic Labrador Retriever who loves to play fetch and swim. He gets along well with children and other dogs. He's house-trained and knows basic commands like sit, stay, and come. Buddy would make a great family pet for an active household.
+
+Additional Notes:
+- Vaccinated and microchipped
+- Good with kids ages 5+
+- Needs daily exercise
+- Loves treats and belly rubs
