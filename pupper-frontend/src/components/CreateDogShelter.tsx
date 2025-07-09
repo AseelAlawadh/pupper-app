@@ -75,7 +75,7 @@ const CreateDogShelter: React.FC = () => {
             if (!token) throw new Error('No valid token found');
             
             const apiUrl = import.meta.env.VITE_API_URL;
-            const form = new FormData();
+            let response: Response;
             
             if (useAIGeneration && aiImageBase64) {
                 // AI generation uses JSON body
