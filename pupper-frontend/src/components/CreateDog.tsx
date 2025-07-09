@@ -38,6 +38,8 @@ const CreateDog: React.FC = () => {
     const [aiGenerating, setAIGenerating] = useState(false);
     const [aiImageBase64, setAIImageBase64] = useState<string | null>(null);
     const [aiError, setAIError] = useState<string | null>(null);
+    const [useDocumentUpload, setUseDocumentUpload] = useState(false);
+    const [documentFile, setDocumentFile] = useState<File | null>(null);
 
     const [createdDogImageUrl, setCreatedDogImageUrl] = useState<string | null>(null);
 
@@ -115,7 +117,24 @@ const CreateDog: React.FC = () => {
             if (!token) throw new Error('No valid token found');
             const apiUrl = import.meta.env.VITE_API_URL;
             let response;
-            if (useAIGeneration && aiImageBase64) {
+            if (useDocumentUpload) {
+                // Document + Image upload
+                if (!documentFile || !file) {
+                    setMessage('Please select both document and image files.');
+                    setOpenDialog(true);
+                    return;
+                }
+                const form = new FormData();
+                form.append('document', documentFile);
+                form.append('image', file);
+                response = await fetch(`${apiUrl}/dogs/create_with_document`, {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: form
+                });
+            } else if (useAIGeneration && aiImageBase64) {
                 // Send as base64
                 const payload: any = { ...formData, image_base64: aiImageBase64 };
                 // Remove empty breed_id to avoid validation error
@@ -319,6 +338,11 @@ const CreateDog: React.FC = () => {
                                 label="Generate with AI"
                                 sx={{mb: 1}}
                             />
+                            <FormControlLabel
+                                control={<Switch checked={useDocumentUpload} onChange={e => setUseDocumentUpload(e.target.checked)} />}
+                                label="Upload Document + Image"
+                                sx={{mb: 1}}
+                            />
                             {useAIGeneration ? (
                                 <>
                                     <TextField
@@ -345,10 +369,22 @@ const CreateDog: React.FC = () => {
                                         </Box>
                                     )}
                                 </>
+                            ) : useDocumentUpload ? (
+                                <>
+                                    <Button variant="contained" component="label" fullWidth sx={{mb: 1}}>
+                                        Upload Document (PDF/Image)
+                                        <input type="file" hidden accept=".pdf,.jpg,.jpeg,.png" onChange={e => setDocumentFile(e.target.files?.[0] || null)} required/>
+                                    </Button>
+                                    {documentFile && <Typography variant="body2" sx={{mb: 1}}>Document: {documentFile.name}</Typography>}
+                                    <Button variant="contained" component="label" fullWidth sx={{mb: 1}}>
+                                        Upload Dog Image
+                                        <input type="file" hidden accept="image/*" onChange={handleFileChange} required/>
+                                    </Button>
+                                </>
                             ) : (
                                 <Button variant="contained" component="label" fullWidth sx={{mb: 1}}>
                                     Upload Image
-                                    <input type="file" hidden accept="image/*" onChange={handleFileChange} required={!useAIGeneration} disabled={useAIGeneration}/>
+                                    <input type="file" hidden accept="image/*" onChange={handleFileChange} required={!useAIGeneration && !useDocumentUpload}/>
                                 </Button>
                             )}
                             {(!useAIGeneration && imagePreview) && (

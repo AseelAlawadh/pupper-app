@@ -86,6 +86,13 @@ class BackendStack(Stack):
                 resources=["*"]
             )
         )
+        
+        backend_lambda.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["textract:DetectDocumentText"],
+                resources=["*"]
+            )
+        )
 
         # Permissions
         db_instance.secret.grant_read(backend_lambda)

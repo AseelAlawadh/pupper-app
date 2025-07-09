@@ -8,6 +8,7 @@ import {Pets, Home as HomeIcon, Add as AddIcon, Logout as LogoutIcon} from '@mui
 import Home from './components/Home';
 import DogDetail from "./components/DogDetail";
 import CreateDog from './components/CreateDog';
+import DogMatcher from './components/DogMatcher';
 
 // Create a custom theme
 const theme = createTheme({
@@ -232,6 +233,28 @@ function App() {
                                             </Button>
                                             <Button
                                                 color="inherit"
+                                                component={Link}
+                                                to="/match"
+                                                sx={{
+                                                    color: 'white',
+                                                    fontWeight: 500,
+                                                    px: 3,
+                                                    py: 1.5,
+                                                    borderRadius: 2,
+                                                    background: 'rgba(255,255,255,0.1)',
+                                                    backdropFilter: 'blur(10px)',
+                                                    border: '1px solid rgba(255,255,255,0.2)',
+                                                    '&:hover': {
+                                                        backgroundColor: 'rgba(255,255,255,0.2)',
+                                                        transform: 'translateY(-2px)',
+                                                        boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                                                    }
+                                                }}
+                                            >
+                                                Match Dogs
+                                            </Button>
+                                            <Button
+                                                color="inherit"
                                                 onClick={signOut}
                                                 startIcon={<LogoutIcon />}
                                                 sx={{
@@ -276,6 +299,7 @@ function App() {
                                         <Route path="/" element={<Home />} />
                                         <Route path="/dogs/:id" element={<DogDetail />} />
                                         <Route path="/create-dog" element={<CreateDog />} />
+                                        <Route path="/match" element={<DogMatcher />} />
                                     </Routes>
                                 </Box>
                             </Router>
