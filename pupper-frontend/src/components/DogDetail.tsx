@@ -124,7 +124,21 @@ function DogDetail() {
     if (!dog) {
         return (
             <Container maxWidth="lg" sx={{ mt: 4 }}>
-                <Alert severity="error">Dog not found</Alert>
+                <Alert 
+                    severity="error" 
+                    sx={{ 
+                        borderRadius: 4,
+                        p: 3,
+                        background: 'linear-gradient(135deg, #FF5722 0%, #FF7043 100%)',
+                        color: 'white',
+                        fontSize: '1.1rem',
+                        fontWeight: 600,
+                        textAlign: 'center',
+                        '& .MuiAlert-icon': { color: 'white', fontSize: '2rem' }
+                    }}
+                >
+                    🐕🔍 Oops! This furry friend couldn't be found. They might have already found their forever home! 🏠❤️
+                </Alert>
             </Container>
         );
     }
@@ -141,15 +155,15 @@ function DogDetail() {
             </Button>
 
             {/* Hero Section */}
-            <Paper elevation={3} sx={{ p: 4, mb: 4, borderRadius: 3, background: 'linear-gradient(135deg, #E8F5E8 0%, #F1F8E9 100%)' }}>
+            <Paper elevation={3} sx={{ p: 4, mb: 4, borderRadius: 4, background: 'linear-gradient(135deg, #F9F3EF 0%, #D2C1B6 100%)', border: '1px solid rgba(27,60,83,0.1)' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                     <PetsIcon sx={{ fontSize: 40, color: 'primary.main', mr: 2 }} />
                     <Box>
-                        <Typography variant="h3" sx={{ fontWeight: 700, color: 'primary.main', mb: 1 }}>
-                            {dog.name}
+                        <Typography variant="h3" sx={{ fontWeight: 700, color: '#1B3C53', mb: 1 }}>
+                            🐶 {dog.name} 💕
                         </Typography>
-                        <Typography variant="h6" color="text.secondary">
-                            {dog.breed} • {dog.color}
+                        <Typography variant="h6" sx={{ color: '#456882', fontWeight: 500 }}>
+                            🏷️ {dog.breed} • 🎨 {dog.color}
                         </Typography>
                     </Box>
                 </Box>
@@ -171,28 +185,34 @@ function DogDetail() {
 
                 {/* Dog Stats */}
                 <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 3, mb: 4 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', p: 2, bgcolor: 'white', borderRadius: 2 }}>
-                        <CakeIcon sx={{ mr: 1, color: 'primary.main' }} />
+                    <Box sx={{ display: 'flex', alignItems: 'center', p: 3, bgcolor: 'rgba(255,255,255,0.9)', borderRadius: 3, boxShadow: '0 4px 12px rgba(27,60,83,0.1)', border: '1px solid rgba(27,60,83,0.05)' }}>
+                        <Box sx={{ p: 1.5, borderRadius: '50%', bgcolor: '#1B3C53', mr: 2 }}>
+                            <Typography sx={{ fontSize: '1.5rem' }}>🎂</Typography>
+                        </Box>
                         <Box>
-                            <Typography variant="body2" color="text.secondary">Age</Typography>
-                            <Typography variant="h6">{calculateAge(dog.birthday)} years old</Typography>
+                            <Typography variant="body2" sx={{ color: '#456882', fontWeight: 600 }}>Age</Typography>
+                            <Typography variant="h6" sx={{ color: '#1B3C53', fontWeight: 700 }}>{calculateAge(dog.birthday)} years old</Typography>
                         </Box>
                     </Box>
                     {dog.weight && (
-                        <Box sx={{ display: 'flex', alignItems: 'center', p: 2, bgcolor: 'white', borderRadius: 2 }}>
-                            <ScaleIcon sx={{ mr: 1, color: 'primary.main' }} />
+                        <Box sx={{ display: 'flex', alignItems: 'center', p: 3, bgcolor: 'rgba(255,255,255,0.9)', borderRadius: 3, boxShadow: '0 4px 12px rgba(27,60,83,0.1)', border: '1px solid rgba(27,60,83,0.05)' }}>
+                            <Box sx={{ p: 1.5, borderRadius: '50%', bgcolor: '#456882', mr: 2 }}>
+                                <Typography sx={{ fontSize: '1.5rem' }}>⚖️</Typography>
+                            </Box>
                             <Box>
-                                <Typography variant="body2" color="text.secondary">Weight</Typography>
-                                <Typography variant="h6">{dog.weight} lbs</Typography>
+                                <Typography variant="body2" sx={{ color: '#456882', fontWeight: 600 }}>Weight</Typography>
+                                <Typography variant="h6" sx={{ color: '#1B3C53', fontWeight: 700 }}>{dog.weight} lbs</Typography>
                             </Box>
                         </Box>
                     )}
                     {dog.city && dog.state && (
-                        <Box sx={{ display: 'flex', alignItems: 'center', p: 2, bgcolor: 'white', borderRadius: 2 }}>
-                            <LocationIcon sx={{ mr: 1, color: 'primary.main' }} />
+                        <Box sx={{ display: 'flex', alignItems: 'center', p: 3, bgcolor: 'rgba(255,255,255,0.9)', borderRadius: 3, boxShadow: '0 4px 12px rgba(27,60,83,0.1)', border: '1px solid rgba(27,60,83,0.05)' }}>
+                            <Box sx={{ p: 1.5, borderRadius: '50%', bgcolor: '#D2C1B6', mr: 2 }}>
+                                <Typography sx={{ fontSize: '1.5rem' }}>📍</Typography>
+                            </Box>
                             <Box>
-                                <Typography variant="body2" color="text.secondary">Location</Typography>
-                                <Typography variant="h6">{dog.city}, {dog.state}</Typography>
+                                <Typography variant="body2" sx={{ color: '#456882', fontWeight: 600 }}>Location</Typography>
+                                <Typography variant="h6" sx={{ color: '#1B3C53', fontWeight: 700 }}>{dog.city}, {dog.state}</Typography>
                             </Box>
                         </Box>
                     )}
@@ -203,36 +223,86 @@ function DogDetail() {
                     <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, mb: 3 }}>
                         <Button
                             variant="contained"
-                            color="success"
                             onClick={handleWag}
                             disabled={loadingAction}
-                            startIcon={<FavoriteIcon />}
                             size="large"
-                            sx={{ px: 4, py: 1.5 }}
+                            sx={{ 
+                                px: 5, 
+                                py: 2, 
+                                borderRadius: 4,
+                                background: 'linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%)',
+                                fontSize: '1.1rem',
+                                fontWeight: 700,
+                                boxShadow: '0 6px 20px rgba(76, 175, 80, 0.3)',
+                                '&:hover': {
+                                    background: 'linear-gradient(135deg, #43A047 0%, #5CB85C 100%)',
+                                    transform: 'translateY(-2px)',
+                                    boxShadow: '0 8px 25px rgba(76, 175, 80, 0.4)'
+                                }
+                            }}
                         >
-                            Wag ({dog.wags})
+                            🐕❤️ Wag ({dog.wags})
                         </Button>
                         <Button
                             variant="contained"
-                            color="error"
                             onClick={handleGrowl}
                             disabled={loadingAction}
-                            startIcon={<ThumbDownIcon />}
                             size="large"
-                            sx={{ px: 4, py: 1.5 }}
+                            sx={{ 
+                                px: 5, 
+                                py: 2, 
+                                borderRadius: 4,
+                                background: 'linear-gradient(135deg, #FF5722 0%, #FF7043 100%)',
+                                fontSize: '1.1rem',
+                                fontWeight: 700,
+                                boxShadow: '0 6px 20px rgba(255, 87, 34, 0.3)',
+                                '&:hover': {
+                                    background: 'linear-gradient(135deg, #E64A19 0%, #FF5722 100%)',
+                                    transform: 'translateY(-2px)',
+                                    boxShadow: '0 8px 25px rgba(255, 87, 34, 0.4)'
+                                }
+                            }}
                         >
-                            Growl ({dog.growls})
+                            😕 Growl ({dog.growls})
                         </Button>
                     </Box>
                 )}
 
-                {message && <Alert severity="success" sx={{ mb: 2 }}>{message}</Alert>}
-                {errorMsg && <Alert severity="error" sx={{ mb: 2 }}>{errorMsg}</Alert>}
+                {message && (
+                    <Alert 
+                        severity="success" 
+                        sx={{ 
+                            mb: 2, 
+                            borderRadius: 3,
+                            background: 'linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%)',
+                            color: 'white',
+                            fontWeight: 600,
+                            '& .MuiAlert-icon': { color: 'white' }
+                        }}
+                    >
+                        🎉 {message}
+                    </Alert>
+                )}
+                {errorMsg && (
+                    <Alert 
+                        severity="error" 
+                        sx={{ 
+                            mb: 2, 
+                            borderRadius: 3,
+                            background: 'linear-gradient(135deg, #FF5722 0%, #FF7043 100%)',
+                            color: 'white',
+                            fontWeight: 600,
+                            '& .MuiAlert-icon': { color: 'white' }
+                        }}
+                    >
+                        😞 {errorMsg}
+                    </Alert>
+                )}
             </Paper>
 
             {/* Description */}
             {dog.description && (
-                <Paper elevation={2} sx={{ p: 4, mb: 4, borderRadius: 3 }}>
+                <Paper elevation={2} sx={{ p: 4, mb: 4, borderRadius: 4, background: 'rgba(249, 243, 239, 0.7)', border: '1px solid rgba(27,60,83,0.1)' }}>
                     <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
                         About {dog.name}
                     </Typography>
@@ -249,12 +319,17 @@ function DogDetail() {
                                 {dog.sentiment_tags.map((tag, index) => (
                                     <Chip
                                         key={index}
-                                        label={tag}
+                                        label={`✨ ${tag}`}
                                         size="medium"
                                         sx={{
-                                            backgroundColor: 'primary.light',
+                                            background: `linear-gradient(135deg, ${index % 2 === 0 ? '#1B3C53' : '#456882'} 0%, ${index % 2 === 0 ? '#456882' : '#D2C1B6'} 100%)`,
                                             color: 'white',
-                                            fontWeight: 500
+                                            fontWeight: 600,
+                                            boxShadow: '0 2px 8px rgba(27,60,83,0.2)',
+                                            '&:hover': {
+                                                transform: 'translateY(-1px)',
+                                                boxShadow: '0 4px 12px rgba(27,60,83,0.3)'
+                                            }
                                         }}
                                     />
                                 ))}

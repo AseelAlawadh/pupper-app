@@ -10,11 +10,6 @@ import {
   Search as SearchIcon,
   Clear as ClearIcon,
   Add as AddIcon,
-  Favorite as FavoriteIcon,
-  ThumbDown as ThumbDownIcon,
-  LocationOn as LocationIcon,
-  Cake as CakeIcon,
-  Scale as ScaleIcon
 } from '@mui/icons-material';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 
@@ -177,11 +172,20 @@ const Home: React.FC = () => {
           color: 'white',
           boxShadow: '0 8px 32px rgba(27, 60, 83, 0.3)'
         }}>
-          <Typography variant="h3" gutterBottom sx={{ fontWeight: 700, mb: 2 }}>
-            Find Your Perfect Companion
+          <Typography variant="h3" gutterBottom sx={{ 
+            fontWeight: 700, 
+            mb: 2,
+            animation: 'bounce 2s infinite',
+            '@keyframes bounce': {
+              '0%, 20%, 50%, 80%, 100%': { transform: 'translateY(0)' },
+              '40%': { transform: 'translateY(-10px)' },
+              '60%': { transform: 'translateY(-5px)' }
+            }
+          }}>
+            🐕 Find Your Perfect Companion 🐾
           </Typography>
           <Typography variant="h6" sx={{ mb: 3, opacity: 0.9 }}>
-            Discover amazing Labrador Retrievers waiting for their forever homes
+            ✨ Discover amazing Labrador Retrievers waiting for their forever homes! 🏠💕
           </Typography>
           {user && (
             <Button
@@ -338,10 +342,13 @@ const Home: React.FC = () => {
               flexDirection: 'column',
               borderRadius: 3,
               boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-              transition: 'transform 0.2s, box-shadow 0.2s',
+              transition: 'transform 0.3s ease, box-shadow 0.3s ease',
               '&:hover': {
-                transform: 'translateY(-4px)',
-                boxShadow: '0 8px 30px rgba(0,0,0,0.15)'
+                transform: 'translateY(-8px) rotate(1deg)',
+                boxShadow: '0 12px 40px rgba(27, 60, 83, 0.2)',
+                '& .dog-name': {
+                  color: '#456882'
+                }
               }
             }}>
               <CardMedia
@@ -352,31 +359,32 @@ const Home: React.FC = () => {
                 sx={{ objectFit: 'cover' }}
               />
               <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: 'primary.main' }}>
-                  {dog.name}
+                <Typography variant="h6" gutterBottom className="dog-name" sx={{ 
+                  fontWeight: 600, 
+                  color: 'primary.main',
+                  transition: 'color 0.3s ease'
+                }}>
+                  🐶 {dog.name} 💕
                 </Typography>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <CakeIcon sx={{ fontSize: 16, mr: 0.5, color: 'text.secondary' }} />
                   <Typography variant="body2" color="text.secondary">
-                    {calculateAge(dog.birthday)} years old
+                    🎂 {calculateAge(dog.birthday)} years old
                   </Typography>
                 </Box>
 
                 {dog.weight && (
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <ScaleIcon sx={{ fontSize: 16, mr: 0.5, color: 'text.secondary' }} />
                     <Typography variant="body2" color="text.secondary">
-                      {dog.weight} lbs
+                      ⚖️ {dog.weight} lbs
                     </Typography>
                   </Box>
                 )}
 
                 {dog.city && dog.state && (
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <LocationIcon sx={{ fontSize: 16, mr: 0.5, color: 'text.secondary' }} />
                     <Typography variant="body2" color="text.secondary">
-                      {dog.city}, {dog.state}
+                      📍 {dog.city}, {dog.state}
                     </Typography>
                   </Box>
                 )}
@@ -406,15 +414,22 @@ const Home: React.FC = () => {
 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <FavoriteIcon sx={{ fontSize: 16, color: 'success.main' }} />
-                    <Typography variant="body2" color="text.secondary">
-                      {dog.wags}
+                    <Typography variant="body2" sx={{ 
+                      color: 'success.main',
+                      fontWeight: 600,
+                      animation: dog.wags > 5 ? 'pulse 2s infinite' : 'none',
+                      '@keyframes pulse': {
+                        '0%': { transform: 'scale(1)' },
+                        '50%': { transform: 'scale(1.1)' },
+                        '100%': { transform: 'scale(1)' }
+                      }
+                    }}>
+                      🐕❤️ {dog.wags} wags
                     </Typography>
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <ThumbDownIcon sx={{ fontSize: 16, color: 'error.main' }} />
                     <Typography variant="body2" color="text.secondary">
-                      {dog.growls}
+                      😕 {dog.growls} growls
                     </Typography>
                   </Box>
                 </Box>
@@ -432,12 +447,12 @@ const Home: React.FC = () => {
                     fontWeight: 600,
                     '&:hover': {
                       background: 'linear-gradient(45deg, #0f2a3a 30%, #3a5670 90%)',
-                      transform: 'translateY(-1px)',
-                      boxShadow: '0 4px 12px rgba(27, 60, 83, 0.4)'
+                      transform: 'translateY(-2px) scale(1.02)',
+                      boxShadow: '0 6px 20px rgba(27, 60, 83, 0.4)'
                     }
                   }}
                 >
-                  View Details
+                  👀 View Details ✨
                 </Button>
               </CardContent>
             </Card>
@@ -446,11 +461,14 @@ const Home: React.FC = () => {
 
         {dogs.length === 0 && !loading && (
           <Box sx={{ textAlign: 'center', py: 8 }}>
+            <Typography variant="h4" sx={{ mb: 2, fontSize: '3rem' }}>
+              🐕🔍
+            </Typography>
             <Typography variant="h6" color="text.secondary" gutterBottom>
-              No dogs found matching your criteria
+              Oops! No furry friends found 😭
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Try adjusting your filters or check back later for new additions
+              Try adjusting your filters or check back later for new tail-waggers! 🐶✨
             </Typography>
           </Box>
         )}

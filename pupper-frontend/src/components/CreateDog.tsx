@@ -253,11 +253,11 @@ const CreateDog: React.FC = () => {
                     <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
                         <DialogTitle sx={{display: 'flex', alignItems: 'center', gap: 1}}>
                             {message.startsWith('Dog created') ? (
-                                <CheckCircleIcon color="success" sx={{fontSize: 32}} />
+                                <CheckCircleIcon sx={{fontSize: 32, color: '#4CAF50'}} />
                             ) : (
-                                <ErrorOutlineIcon color="error" sx={{fontSize: 32}} />
+                                <ErrorOutlineIcon sx={{fontSize: 32, color: '#FF5722'}} />
                             )}
-                            {message.startsWith('Dog created') ? 'Dog Created!' : 'Oops!'}
+                            {message.startsWith('Dog created') ? '🎉 Dog Created Successfully!' : '😞 Oops! Something went wrong'}
                         </DialogTitle>
                         <DialogContent>
                             <Typography sx={{fontWeight: 500, mb: 1, color: message.startsWith('Dog created') ? 'green' : 'red'}}>
@@ -362,7 +362,20 @@ const CreateDog: React.FC = () => {
                                     >
                                         {aiGenerating ? 'Generating...' : 'Generate Image'}
                                     </Button>
-                                    {aiError && <Typography color="error" sx={{mb: 1}}>{aiError}</Typography>}
+                                    {aiError && (
+                                        <Box sx={{ 
+                                            p: 2, 
+                                            borderRadius: 3, 
+                                            background: 'linear-gradient(135deg, #FF5722 0%, #FF7043 100%)', 
+                                            color: 'white', 
+                                            mb: 1,
+                                            textAlign: 'center'
+                                        }}>
+                                            <Typography sx={{ fontWeight: 600 }}>
+                                                🤖❌ AI Generation Failed: {aiError}
+                                            </Typography>
+                                        </Box>
+                                    )}
                                     {aiImageBase64 && (
                                         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
                                             <img src={`data:image/png;base64,${aiImageBase64}`} alt="Generated Preview" style={{ maxWidth: 200, maxHeight: 200, borderRadius: 8, border: '1px solid #ccc' }} />
