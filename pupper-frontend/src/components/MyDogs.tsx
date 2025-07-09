@@ -76,21 +76,49 @@ const MyDogs: React.FC = () => {
         </Box>
     );
 
-    if (loading) return <Container><Typography>Loading...</Typography></Container>;
+    if (loading) return (
+        <Container maxWidth="lg" sx={{ mt: 4, textAlign: 'center' }}>
+            <Typography variant="h5">🐕 Loading your furry friends...</Typography>
+        </Container>
+    );
 
     return (
         <Container maxWidth="lg" sx={{ mt: 4 }}>
-            <Typography variant="h4" gutterBottom>
-                My Dogs
+            <Typography variant="h4" gutterBottom sx={{ color: '#1B3C53', fontWeight: 700 }}>
+                🐾 My Dogs
             </Typography>
             
-            <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
-                <Tab label={`Wagged (${waggedDogs.length})`} />
-                <Tab label={`Growled (${growledDogs.length})`} />
+            <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)} sx={{ mb: 3 }}>
+                <Tab label={`🐕❤️ Wagged (${waggedDogs.length})`} sx={{ fontWeight: 600 }} />
+                <Tab label={`😕 Growled (${growledDogs.length})`} sx={{ fontWeight: 600 }} />
             </Tabs>
 
-            {tabValue === 0 && renderDogs(waggedDogs)}
-            {tabValue === 1 && renderDogs(growledDogs)}
+            {tabValue === 0 && (
+                waggedDogs.length > 0 ? renderDogs(waggedDogs) : (
+                    <Box sx={{ textAlign: 'center', py: 8 }}>
+                        <Typography variant="h5" sx={{ mb: 2 }}>🐶💔</Typography>
+                        <Typography variant="h6" color="text.secondary">
+                            No wagged dogs yet!
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            Start wagging some adorable pups! 🐾✨
+                        </Typography>
+                    </Box>
+                )
+            )}
+            {tabValue === 1 && (
+                growledDogs.length > 0 ? renderDogs(growledDogs) : (
+                    <Box sx={{ textAlign: 'center', py: 8 }}>
+                        <Typography variant="h5" sx={{ mb: 2 }}>🐕😅</Typography>
+                        <Typography variant="h6" color="text.secondary">
+                            No growled dogs yet!
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            Hopefully you won't need this section! 😊
+                        </Typography>
+                    </Box>
+                )
+            )}
         </Container>
     );
 };

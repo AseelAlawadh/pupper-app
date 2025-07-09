@@ -59,10 +59,37 @@ function DogDetail() {
                 throw new Error(data.detail || 'Failed to wag');
             }
             const data = await response.json();
-            setDog({ ...dog, wags: data.wags });
+            setDog({ ...dog, wags: data.wags, user_wagged: true });
             setMessage('You wagged this dog! 🐾');
         } catch (error: any) {
             setErrorMsg(error.message || 'Error wagging');
+        } finally {
+            setLoadingAction(false);
+        }
+    };
+
+    const handleUnwag = async () => {
+        if (!dog) return;
+        setLoadingAction(true);
+        setMessage(null);
+        setErrorMsg(null);
+        try {
+            const session = await fetchAuthSession();
+            const token = session.tokens?.idToken?.toString();
+            if (!token) throw new Error('No valid token found');
+            const response = await fetch(`${apiUrl}/dogs/${id}/wag`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.detail || 'Failed to unwag');
+            }
+            const data = await response.json();
+            setDog({ ...dog, wags: data.wags, user_wagged: false });
+            setMessage('You removed your wag! 😔');
+        } catch (error: any) {
+            setErrorMsg(error.message || 'Error removing wag');
         } finally {
             setLoadingAction(false);
         }
@@ -86,10 +113,37 @@ function DogDetail() {
                 throw new Error(data.detail || 'Failed to growl');
             }
             const data = await response.json();
-            setDog({ ...dog, growls: data.growls });
+            setDog({ ...dog, growls: data.growls, user_growled: true });
             setMessage('You growled at this dog! 😠');
         } catch (error: any) {
             setErrorMsg(error.message || 'Error growling');
+        } finally {
+            setLoadingAction(false);
+        }
+    };
+
+    const handleUngrowl = async () => {
+        if (!dog) return;
+        setLoadingAction(true);
+        setMessage(null);
+        setErrorMsg(null);
+        try {
+            const session = await fetchAuthSession();
+            const token = session.tokens?.idToken?.toString();
+            if (!token) throw new Error('No valid token found');
+            const response = await fetch(`${apiUrl}/dogs/${id}/growl`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.detail || 'Failed to ungrowl');
+            }
+            const data = await response.json();
+            setDog({ ...dog, growls: data.growls, user_growled: false });
+            setMessage('You removed your growl! 😌');
+        } catch (error: any) {
+            setErrorMsg(error.message || 'Error removing growl');
         } finally {
             setLoadingAction(false);
         }
@@ -163,24 +217,53 @@ function DogDetail() {
                             🐶 {dog.name} 💕
                         </Typography>
                         <Typography variant="h6" sx={{ color: '#456882', fontWeight: 500 }}>
-                            🏷️ {dog.breed} • 🎨 {dog.color}
+                            🏷️ {dog.breed}
                         </Typography>
                     </Box>
                 </Box>
 
                 {/* Main Image */}
-                <Box sx={{ mb: 4, textAlign: 'center' }}>
-                    <img
-                        src={dog.image_url || dog.original_key || 'https://via.placeholder.com/600x400?text=No+Image'}
-                        alt={dog.name}
-                        style={{
-                            maxWidth: '100%',
-                            height: '400px',
-                            objectFit: 'cover',
-                            borderRadius: '12px',
-                            boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
-                        }}
-                    />
+                <Box sx={{ mb: 4, textAlign: 'center', position: 'relative' }}>
+                    <Box sx={{
+                        position: 'relative',
+                        display: 'inline-block',
+                        '&::before': {
+                            content: '"💕"',
+                            position: 'absolute',
+                            top: '-10px',
+                            right: '-10px',
+                            fontSize: '2rem',
+                            animation: 'float 3s ease-in-out infinite',
+                            zIndex: 1
+                        },
+                        '&::after': {
+                            content: '"✨"',
+                            position: 'absolute',
+                            bottom: '-10px',
+                            left: '-10px',
+                            fontSize: '1.5rem',
+                            animation: 'float 3s ease-in-out infinite 1.5s',
+                            zIndex: 1
+                        },
+                        '@keyframes float': {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        }
+                    }}>
+                        <img
+                            src={dog.image_url || dog.original_key || 'https://via.placeholder.com/600x400?text=No+Image'}
+                            alt={dog.name}
+                            style={{
+                                maxWidth: '100%',
+                                height: '400px',
+                                objectFit: 'cover',
+                                borderRadius: '20px',
+                                boxShadow: '0 12px 40px rgba(255, 105, 180, 0.3)',
+                                border: '4px solid rgba(255, 182, 193, 0.5)',
+                                transition: 'all 0.3s ease'
+                            }}
+                        />
+                    </Box>
                 </Box>
 
                 {/* Dog Stats */}
@@ -216,55 +299,137 @@ function DogDetail() {
                             </Box>
                         </Box>
                     )}
+                    {dog.color && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', p: 3, bgcolor: 'rgba(255,255,255,0.9)', borderRadius: 3, boxShadow: '0 4px 12px rgba(27,60,83,0.1)', border: '1px solid rgba(27,60,83,0.05)' }}>
+                            <Box sx={{ p: 1.5, borderRadius: '50%', bgcolor: '#F9F3EF', mr: 2 }}>
+                                <Typography sx={{ fontSize: '1.5rem' }}>🎨</Typography>
+                            </Box>
+                            <Box>
+                                <Typography variant="body2" sx={{ color: '#456882', fontWeight: 600 }}>Color</Typography>
+                                <Typography variant="h6" sx={{ color: '#1B3C53', fontWeight: 700 }}>{dog.color}</Typography>
+                            </Box>
+                        </Box>
+                    )}
                 </Box>
 
                 {/* Action Buttons */}
                 {user && (
                     <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, mb: 3 }}>
-                        <Button
-                            variant="contained"
-                            onClick={handleWag}
-                            disabled={loadingAction}
-                            size="large"
-                            sx={{ 
-                                px: 5, 
-                                py: 2, 
-                                borderRadius: 4,
-                                background: 'linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%)',
-                                fontSize: '1.1rem',
-                                fontWeight: 700,
-                                boxShadow: '0 6px 20px rgba(76, 175, 80, 0.3)',
-                                '&:hover': {
-                                    background: 'linear-gradient(135deg, #43A047 0%, #5CB85C 100%)',
-                                    transform: 'translateY(-2px)',
-                                    boxShadow: '0 8px 25px rgba(76, 175, 80, 0.4)'
-                                }
-                            }}
-                        >
-                            🐕❤️ Wag ({dog.wags})
-                        </Button>
-                        <Button
-                            variant="contained"
-                            onClick={handleGrowl}
-                            disabled={loadingAction}
-                            size="large"
-                            sx={{ 
-                                px: 5, 
-                                py: 2, 
-                                borderRadius: 4,
-                                background: 'linear-gradient(135deg, #FF5722 0%, #FF7043 100%)',
-                                fontSize: '1.1rem',
-                                fontWeight: 700,
-                                boxShadow: '0 6px 20px rgba(255, 87, 34, 0.3)',
-                                '&:hover': {
-                                    background: 'linear-gradient(135deg, #E64A19 0%, #FF5722 100%)',
-                                    transform: 'translateY(-2px)',
-                                    boxShadow: '0 8px 25px rgba(255, 87, 34, 0.4)'
-                                }
-                            }}
-                        >
-                            😕 Growl ({dog.growls})
-                        </Button>
+                        {dog.user_wagged ? (
+                            <Button
+                                variant="outlined"
+                                onClick={handleUnwag}
+                                disabled={loadingAction}
+                                size="large"
+                                sx={{ 
+                                    px: 6, 
+                                    py: 2.5, 
+                                    borderRadius: 8,
+                                    borderColor: '#1B3C53',
+                                    color: '#1B3C53',
+                                    fontSize: '1.2rem',
+                                    fontWeight: 800,
+                                    background: 'rgba(27, 60, 83, 0.05)',
+                                    border: '2px dashed #1B3C53',
+                                    animation: 'heartbeat 2s infinite',
+                                    '@keyframes heartbeat': {
+                                        '0%': { transform: 'scale(1)' },
+                                        '50%': { transform: 'scale(1.05)' },
+                                        '100%': { transform: 'scale(1)' }
+                                    },
+                                    '&:hover': {
+                                        borderColor: '#456882',
+                                        backgroundColor: 'rgba(69, 104, 130, 0.1)',
+                                        transform: 'translateY(-3px) scale(1.02)',
+                                        boxShadow: '0 8px 25px rgba(27, 60, 83, 0.4)'
+                                    }
+                                }}
+                            >
+                                💔 Unwag Tail ({dog.wags})
+                            </Button>
+                        ) : (
+                            <Button
+                                variant="contained"
+                                onClick={handleWag}
+                                disabled={loadingAction || dog.user_growled}
+                                size="large"
+                                sx={{ 
+                                    px: 6, 
+                                    py: 2.5, 
+                                    borderRadius: 8,
+                                    background: 'linear-gradient(135deg, #1B3C53 0%, #456882 50%, #D2C1B6 100%)',
+                                    fontSize: '1.2rem',
+                                    fontWeight: 800,
+                                    boxShadow: '0 8px 25px rgba(27, 60, 83, 0.4)',
+                                    animation: 'wiggle 3s infinite',
+                                    '@keyframes wiggle': {
+                                        '0%, 100%': { transform: 'rotate(0deg)' },
+                                        '25%': { transform: 'rotate(2deg)' },
+                                        '75%': { transform: 'rotate(-2deg)' }
+                                    },
+                                    '&:hover': {
+                                        background: 'linear-gradient(135deg, #0f2a3a 0%, #1B3C53 50%, #456882 100%)',
+                                        transform: 'translateY(-4px) scale(1.05)',
+                                        boxShadow: '0 12px 35px rgba(27, 60, 83, 0.6)',
+                                        animation: 'bounce 0.6s infinite'
+                                    }
+                                }}
+                            >
+                                🐕💖 Wag Tail! ({dog.wags})
+                            </Button>
+                        )}
+                        
+                        {dog.user_growled ? (
+                            <Button
+                                variant="outlined"
+                                onClick={handleUngrowl}
+                                disabled={loadingAction}
+                                size="large"
+                                sx={{ 
+                                    px: 6, 
+                                    py: 2.5, 
+                                    borderRadius: 8,
+                                    borderColor: '#D2C1B6',
+                                    color: '#1B3C53',
+                                    fontSize: '1.2rem',
+                                    fontWeight: 800,
+                                    background: 'rgba(210, 193, 182, 0.1)',
+                                    border: '2px dashed #D2C1B6',
+                                    '&:hover': {
+                                        borderColor: '#456882',
+                                        backgroundColor: 'rgba(69, 104, 130, 0.1)',
+                                        transform: 'translateY(-3px) scale(1.02)',
+                                        boxShadow: '0 8px 25px rgba(210, 193, 182, 0.4)'
+                                    }
+                                }}
+                            >
+                                🙇 Un-grumpy ({dog.growls})
+                            </Button>
+                        ) : (
+                            <Button
+                                variant="contained"
+                                onClick={handleGrowl}
+                                disabled={loadingAction || dog.user_wagged}
+                                size="large"
+                                sx={{ 
+                                    px: 6, 
+                                    py: 2.5, 
+                                    borderRadius: 8,
+                                    background: 'linear-gradient(135deg, #D2C1B6 0%, #F9F3EF 50%, #456882 100%)',
+                                    fontSize: '1.2rem',
+                                    fontWeight: 800,
+                                    color: '#1B3C53',
+                                    boxShadow: '0 8px 25px rgba(210, 193, 182, 0.4)',
+                                    '&:hover': {
+                                        background: 'linear-gradient(135deg, #456882 0%, #D2C1B6 50%, #F9F3EF 100%)',
+                                        transform: 'translateY(-4px) scale(1.05)',
+                                        boxShadow: '0 12px 35px rgba(210, 193, 182, 0.6)'
+                                    }
+                                }}
+                            >
+                                😤💕 Not My Type ({dog.growls})
+                            </Button>
+                        )}
                     </Box>
                 )}
 
