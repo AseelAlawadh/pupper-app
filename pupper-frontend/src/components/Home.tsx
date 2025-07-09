@@ -172,10 +172,10 @@ const Home: React.FC = () => {
           textAlign: 'center',
           mb: 6,
           p: 4,
-          background: 'linear-gradient(135deg, #2E7D32 0%, #4CAF50 100%)',
+          background: 'linear-gradient(135deg, #1B3C53 0%, #456882 100%)',
           borderRadius: 4,
           color: 'white',
-          boxShadow: '0 8px 32px rgba(46, 125, 50, 0.3)'
+          boxShadow: '0 8px 32px rgba(27, 60, 83, 0.3)'
         }}>
           <Typography variant="h3" gutterBottom sx={{ fontWeight: 700, mb: 2 }}>
             Find Your Perfect Companion
@@ -190,9 +190,9 @@ const Home: React.FC = () => {
               onClick={() => navigate('/create-dog')}
               startIcon={<AddIcon />}
               sx={{
-                backgroundColor: 'white',
-                color: '#2E7D32',
-                '&:hover': { backgroundColor: '#f5f5f5' },
+                backgroundColor: '#F9F3EF',
+                color: '#1B3C53',
+                '&:hover': { backgroundColor: '#D2C1B6' },
                 px: 4,
                 py: 1.5
               }}
@@ -203,7 +203,7 @@ const Home: React.FC = () => {
         </Box>
 
         {/* Filter Section */}
-        <Paper elevation={3} sx={{ p: 4, mb: 4, borderRadius: 3, background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)' }}>
+        <Paper elevation={3} sx={{ p: 4, mb: 4, borderRadius: 3, background: '#F9F3EF', backdropFilter: 'blur(10px)' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
             <SearchIcon sx={{ mr: 1, color: 'primary.main' }} />
             <Typography variant="h6" sx={{ fontWeight: 600 }}>
@@ -284,7 +284,17 @@ const Home: React.FC = () => {
                 type="submit"
                 variant="contained"
                 startIcon={<SearchIcon />}
-                sx={{ px: 3 }}
+                sx={{ 
+                  px: 4,
+                  py: 1.2,
+                  background: 'linear-gradient(45deg, #1B3C53 30%, #456882 90%)',
+                  borderRadius: 2,
+                  fontWeight: 600,
+                  '&:hover': {
+                    background: 'linear-gradient(45deg, #0f2a3a 30%, #3a5670 90%)',
+                    transform: 'translateY(-1px)'
+                  }
+                }}
               >
                 Search
               </Button>
@@ -292,6 +302,18 @@ const Home: React.FC = () => {
                 variant="outlined"
                 onClick={handleClearFilters}
                 startIcon={<ClearIcon />}
+                sx={{
+                  px: 3,
+                  py: 1.2,
+                  borderRadius: 2,
+                  fontWeight: 600,
+                  borderColor: '#456882',
+                  color: '#456882',
+                  '&:hover': {
+                    borderColor: '#1B3C53',
+                    backgroundColor: 'rgba(69, 104, 130, 0.04)'
+                  }
+                }}
               >
                 Clear Filters
               </Button>
@@ -310,7 +332,18 @@ const Home: React.FC = () => {
         {/* Dog Cards */}
         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 3 }}>
           {dogs.map((dog) => (
-            <Card key={dog.dog_id} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <Card key={dog.dog_id} sx={{ 
+              height: '100%', 
+              display: 'flex', 
+              flexDirection: 'column',
+              borderRadius: 3,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              transition: 'transform 0.2s, box-shadow 0.2s',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: '0 8px 30px rgba(0,0,0,0.15)'
+              }
+            }}>
               <CardMedia
                 component="img"
                 height="250"
@@ -353,14 +386,21 @@ const Home: React.FC = () => {
                     <Chip
                       label={dog.color}
                       size="small"
-                      variant="outlined"
-                      color="primary"
+                      sx={{ 
+                        background: '#D2C1B6',
+                        color: '#1B3C53',
+                        fontWeight: 500
+                      }}
                     />
                   )}
                   <Chip
                     label={dog.breed}
                     size="small"
-                    variant="outlined"
+                    sx={{
+                      background: '#456882',
+                      color: '#F9F3EF',
+                      fontWeight: 500
+                    }}
                   />
                 </Box>
 
@@ -384,7 +424,18 @@ const Home: React.FC = () => {
                   to={`/dogs/${dog.dog_id}`}
                   variant="contained"
                   fullWidth
-                  sx={{ mt: 'auto' }}
+                  sx={{ 
+                    mt: 'auto',
+                    background: 'linear-gradient(45deg, #1B3C53 30%, #456882 90%)',
+                    borderRadius: 2,
+                    py: 1.2,
+                    fontWeight: 600,
+                    '&:hover': {
+                      background: 'linear-gradient(45deg, #0f2a3a 30%, #3a5670 90%)',
+                      transform: 'translateY(-1px)',
+                      boxShadow: '0 4px 12px rgba(27, 60, 83, 0.4)'
+                    }
+                  }}
                 >
                   View Details
                 </Button>

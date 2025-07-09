@@ -8,6 +8,10 @@ from aws_cdk import (
     aws_apigatewayv2_integrations as integrations,
     aws_ec2 as ec2,
     aws_logs as logs,
+    aws_sns as sns,
+    aws_sns_subscriptions as sns_subscriptions,
+    aws_sqs as sqs,
+    aws_lambda_event_sources as lambda_event_sources,
     Duration,
     CfnOutput,
 )
@@ -43,12 +47,15 @@ class BackendStack(Stack):
                                           layers=[fastapi_layer],
                                           memory_size=512,
                                           timeout=Duration.seconds(120),
+                                          tracing=_lambda.Tracing.ACTIVE,
                                           environment={
                                               "DB_SECRET_ARN": db_instance.secret.secret_arn,
                                               "DB_HOST": db_instance.db_instance_endpoint_address,
                                               "BUCKET_NAME": buckets["original"].bucket_name,
-                                              "FERNET_KEY": "H_2p9clY89N59AsHb-faCsZ1z4qng-0f9xj1eN8nDgE="
-
+                                              "FERNET_KEY": "H_2p9clY89N59AsHb-faCsZ1z4qng-0f9xj1eN8nDgE=",
+                                              "POWERTOOLS_SERVICE_NAME": "pupper-backend",
+                                              "POWERTOOLS_METRICS_NAMESPACE": "Pupper",
+                                              "LOG_LEVEL": "INFO"
                                           },
                                           vpc=vpc,
                                           vpc_subnets=ec2.SubnetSelection(
@@ -105,6 +112,37 @@ class BackendStack(Stack):
                                      "PupperHttpLambdaIntegration",
                                      handler=backend_lambda
                                  ))
+        # SNS Topic for dog events
+        dog_events_topic = sns.Topic(self, "DogEventsTopic",
+                                     display_name="Dog Events Topic")
+        
+        # SQS Queue for processing dog events
+        dog_events_queue = sqs.Queue(self, "DogEventsQueue",
+                                     visibility_timeout=Duration.seconds(300))
+        
+        # Subscribe queue to topic
+        dog_events_topic.add_subscription(
+            sns_subscriptions.SqsSubscription(dog_events_queue)
+        )
+        
+        # Event processor Lambda
+        event_processor = _lambda.Function(self, "DogEventProcessor",
+                                          runtime=_lambda.Runtime.PYTHON_3_12,
+                                          handler="event_processor.handler",
+                                          code=_lambda.Code.from_asset("backend/events"),
+                                          timeout=Duration.seconds(60))
+        
+        # Add SQS trigger to event processor
+        event_processor.add_event_source(
+            lambda_event_sources.SqsEventSource(dog_events_queue)
+        )
+        
+        # Grant permissions
+        dog_events_topic.grant_publish(backend_lambda)
+        
+        # Add SNS topic ARN to backend Lambda environment
+        backend_lambda.add_environment("DOG_EVENTS_TOPIC_ARN", dog_events_topic.topic_arn)
+        
         # Output API Gateway endpoint URL
         CfnOutput(self, "PupperHttpApiUrl", value=http_api.api_endpoint)
 
