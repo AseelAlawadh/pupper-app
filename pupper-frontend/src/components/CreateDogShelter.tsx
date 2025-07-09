@@ -14,17 +14,18 @@ const CreateDogShelter: React.FC = () => {
         shelter_name: '',
         city: '',
         state: '',
+        species: '',
         description: '',
+        birthday: '',
+        shelter_entry_date: '',
         weight: '',
         color: ''
     });
 
     const [file, setFile] = useState<File | null>(null);
-    const [documentFile, setDocumentFile] = useState<File | null>(null);
     const [message, setMessage] = useState('');
     const [openDialog, setOpenDialog] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [useDocumentUpload, setUseDocumentUpload] = useState(true);
     const [useAIGeneration, setUseAIGeneration] = useState(false);
     const [aiDescription, setAIDescription] = useState('');
     const [aiGenerating, setAIGenerating] = useState(false);
@@ -76,31 +77,34 @@ const CreateDogShelter: React.FC = () => {
             const apiUrl = import.meta.env.VITE_API_URL;
             const form = new FormData();
             
-            Object.entries(formData).forEach(([key, value]) => {
-                if (value) form.append(key, value);
-            });
-            
-            if (useDocumentUpload && documentFile) {
-                form.append('document', documentFile);
-            }
-            
             if (useAIGeneration && aiImageBase64) {
-                form.append('image_base64', aiImageBase64);
-            } else if (file) {
-                form.append('file', file);
-            }
-            
-            const endpoint = useDocumentUpload && documentFile 
-                ? '/dogs/create_with_document'
-                : useAIGeneration && aiImageBase64
-                ? '/dogs/create_with_generated_image'
-                : '/dogs/create_shelter';
+                // AI generation uses JSON body
+                const payload = { ...formData, image_base64: aiImageBase64 };
+                response = await fetch(`${apiUrl}/dogs/create_with_generated_image`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}` 
+                    },
+                    body: JSON.stringify(payload)
+                });
+            } else {
+                // Regular upload uses FormData
+                const form = new FormData();
+                Object.entries(formData).forEach(([key, value]) => {
+                    if (value) form.append(key, value);
+                });
                 
-            const response = await fetch(`${apiUrl}${endpoint}`, {
-                method: 'POST',
-                headers: { Authorization: `Bearer ${token}` },
-                body: form
-            });
+                if (file) {
+                    form.append('file', file);
+                }
+                
+                response = await fetch(`${apiUrl}/dogs/create_with_image`, {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${token}` },
+                    body: form
+                });
+            }
             
             if (!response.ok) {
                 const errorJson = await response.json();
@@ -175,29 +179,10 @@ const CreateDogShelter: React.FC = () => {
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         
                         <FormControlLabel
-                            control={<Switch checked={useDocumentUpload} onChange={e => setUseDocumentUpload(e.target.checked)} />}
-                            label="Extract data from document (PDF/Image)"
-                            sx={{mb: 1}}
-                        />
-                        
-                        <FormControlLabel
                             control={<Switch checked={useAIGeneration} onChange={e => setUseAIGeneration(e.target.checked)} />}
                             label="Generate image with AI (no photo available)"
                             sx={{mb: 2}}
                         />
-                        
-                        {useDocumentUpload && (
-                            <Button variant="contained" component="label" fullWidth sx={{mb: 2, py: 2}}>
-                                Upload Document (PDF/Image/TXT/CSV with dog info)
-                                <input type="file" hidden accept=".pdf,.jpg,.jpeg,.png,.txt,.csv" onChange={e => setDocumentFile(e.target.files?.[0] || null)} />
-                            </Button>
-                        )}
-                        
-                        {documentFile && (
-                            <Typography variant="body2" sx={{mb: 2, color: '#456882'}}>
-                                Document: {documentFile.name}
-                            </Typography>
-                        )}
                         
                         {useAIGeneration ? (
                             <>
@@ -252,7 +237,12 @@ const CreateDogShelter: React.FC = () => {
                             <TextField fullWidth label="City" name="city" value={formData.city} onChange={handleChange} size="small" placeholder="Optional"/>
                             <TextField fullWidth label="State" name="state" value={formData.state} onChange={handleChange} size="small" placeholder="e.g. CA"/>
                         </Box>
+                        <TextField fullWidth label="Species" name="species" value={formData.species} onChange={handleChange} size="small" placeholder="e.g. Labrador Retriever"/>
                         <TextField fullWidth label="Description" name="description" value={formData.description} onChange={handleChange} multiline rows={2} size="small" placeholder="Any notes about the dog..."/>
+                        <Box sx={{ display: 'flex', gap: 2 }}>
+                            <TextField fullWidth label="Birthday" name="birthday" value={formData.birthday} onChange={handleChange} size="small" placeholder="e.g. 2020-03-15 or March 15, 2020"/>
+                            <TextField fullWidth label="Shelter Entry Date" name="shelter_entry_date" value={formData.shelter_entry_date} onChange={handleChange} size="small" placeholder="e.g. 2024-01-10"/>
+                        </Box>
                         <Box sx={{ display: 'flex', gap: 2 }}>
                             <TextField fullWidth label="Weight" name="weight" value={formData.weight} onChange={handleChange} size="small" placeholder="e.g. 45 lbs or thirty pounds"/>
                             <TextField fullWidth label="Color" name="color" value={formData.color} onChange={handleChange} size="small" placeholder="e.g. brown, golden"/>
