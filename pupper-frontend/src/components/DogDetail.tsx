@@ -230,7 +230,8 @@ function DogDetail() {
     }
 
     return (
-        <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Box sx={{ width: '100vw', minHeight: '100vh', px: 2, py: 4 }}>
+            <Container maxWidth={false} sx={{ maxWidth: '1200px', mx: 'auto' }}>
             {/* Back Button */}
             <Button
                 startIcon={<ArrowBackIcon />}
@@ -249,7 +250,7 @@ function DogDetail() {
                             🐶 {dog.name} 💕
                         </Typography>
                         <Typography variant="h6" sx={{ color: '#456882', fontWeight: 500 }}>
-                            🏷️ {dog.breed}
+                            🏷️ {dog.species}
                         </Typography>
                     </Box>
                 </Box>
@@ -508,24 +509,26 @@ function DogDetail() {
                     </Typography>
                     
                     {dog.sentiment_tags && dog.sentiment_tags.length > 0 && (
-                        <Box sx={{ mt: 3 }}>
-                            <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
-                                Personality Tags:
+                        <Box sx={{ mt: 4, p: 3, bgcolor: 'rgba(255,255,255,0.8)', borderRadius: 3, border: '1px solid rgba(27,60,83,0.1)' }}>
+                            <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, color: '#1B3C53', display: 'flex', alignItems: 'center', gap: 1 }}>
+                                🎭 Personality Traits
                             </Typography>
-                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'flex-start' }}>
                                 {dog.sentiment_tags.map((tag, index) => (
                                     <Chip
                                         key={index}
-                                        label={`✨ ${tag}`}
+                                        label={tag}
                                         size="medium"
                                         sx={{
-                                            background: `linear-gradient(135deg, ${index % 2 === 0 ? '#1B3C53' : '#456882'} 0%, ${index % 2 === 0 ? '#456882' : '#D2C1B6'} 100%)`,
+                                            background: 'linear-gradient(45deg, #FF6F00 30%, #FFB74D 90%)',
                                             color: 'white',
                                             fontWeight: 600,
-                                            boxShadow: '0 2px 8px rgba(27,60,83,0.2)',
+                                            fontSize: '0.9rem',
+                                            px: 1,
+                                            boxShadow: '0 2px 8px rgba(255,111,0,0.3)',
                                             '&:hover': {
-                                                transform: 'translateY(-1px)',
-                                                boxShadow: '0 4px 12px rgba(27,60,83,0.3)'
+                                                transform: 'translateY(-2px) scale(1.05)',
+                                                boxShadow: '0 4px 12px rgba(255,111,0,0.4)'
                                             }
                                         }}
                                     />
@@ -559,7 +562,8 @@ function DogDetail() {
                     </Box>
                 </Paper>
             )}
-        </Container>
+            </Container>
+        </Box>
     );
 };
 

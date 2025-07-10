@@ -64,7 +64,8 @@ const DogMatcher: React.FC = () => {
     };
 
     return (
-        <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Box sx={{ width: '100vw', minHeight: '100vh', px: 2, py: 4 }}>
+            <Container maxWidth={false} sx={{ maxWidth: '900px', mx: 'auto' }}>
             <Typography variant="h4" gutterBottom align="center">
                 Find Your Perfect Dog Match
             </Typography>
@@ -165,7 +166,8 @@ const DogMatcher: React.FC = () => {
                     ))}
                 </Box>
             )}
-        </Container>
+            </Container>
+        </Box>
     );
 };
 

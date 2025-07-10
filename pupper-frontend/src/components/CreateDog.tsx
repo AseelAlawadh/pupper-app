@@ -241,7 +241,8 @@ const CreateDog: React.FC = () => {
 
     return (
         <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <Container maxWidth="sm" sx={{mt: 4, position: 'relative'}}>
+            <Box sx={{ width: '100vw', minHeight: '100vh', px: 2, py: 4 }}>
+                <Container maxWidth={false} sx={{ maxWidth: '600px', mx: 'auto', position: 'relative' }}>
                 {loading && (
                     <Box sx={{
                         position: 'absolute',
@@ -326,7 +327,6 @@ const CreateDog: React.FC = () => {
                                     <MenuItem key={option} value={option}>{option || 'Any Species'}</MenuItem>
                                 ))}
                             </TextField>
-                            <TextField fullWidth label="Breed ID" name="breed_id" value={formData.breed_id} onChange={handleChange} size="small"/>
                             <TextField fullWidth label="Description" name="description" value={formData.description} onChange={handleChange} multiline rows={3} size="small"/>
                             <Box sx={{ display: 'flex', gap: 2 }}>
                                 <DatePicker
@@ -437,7 +437,8 @@ const CreateDog: React.FC = () => {
                         </Box>
                     </form>
                 </Paper>
-            </Container>
+                </Container>
+            </Box>
         </LocalizationProvider>
     );
 };

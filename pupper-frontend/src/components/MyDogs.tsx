@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Box, Card, CardContent, CardMedia, Tabs, Tab } from '@mui/material';
+import { Container, Typography, Box, Card, CardContent, CardMedia, Tabs, Tab, Chip } from '@mui/material';
 import { fetchAuthSession } from 'aws-amplify/auth';
 
 interface Dog {
@@ -68,7 +68,7 @@ const MyDogs: React.FC = () => {
     };
 
     const renderDogs = (dogs: Dog[]) => (
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 4, mt: 3 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 3, mt: 3, justifyContent: 'center' }}>
             {dogs.map((dog) => (
                 <Card 
                     key={dog.dog_id} 
@@ -98,6 +98,29 @@ const MyDogs: React.FC = () => {
                         <Typography variant="body1" sx={{ color: '#456882', fontWeight: 600, textAlign: 'center', mb: 2 }}>
                             {dog.breed} • {dog.age} years old
                         </Typography>
+                        {dog.sentiment_tags && dog.sentiment_tags.length > 0 && (
+                            <Box sx={{ mb: 2 }}>
+                                <Typography variant="caption" sx={{ color: '#456882', fontWeight: 600, mb: 1, display: 'block' }}>
+                                    🎭 Personality:
+                                </Typography>
+                                <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', justifyContent: 'center' }}>
+                                    {dog.sentiment_tags.slice(0, 3).map((tag, index) => (
+                                        <Chip
+                                            key={index}
+                                            label={tag}
+                                            size="small"
+                                            sx={{
+                                                background: 'linear-gradient(45deg, #FF6F00 30%, #FFB74D 90%)',
+                                                color: 'white',
+                                                fontWeight: 500,
+                                                fontSize: '0.7rem'
+                                            }}
+                                        />
+                                    ))}
+                                </Box>
+                            </Box>
+                        )}
+                        
                         <Box sx={{ display: 'flex', justifyContent: 'space-around', background: 'rgba(255, 255, 255, 0.7)', borderRadius: 3, p: 2 }}>
                             <Box sx={{ textAlign: 'center' }}>
                                 <Typography sx={{ fontSize: '1.5rem' }}>🐕❤️</Typography>
@@ -123,7 +146,8 @@ const MyDogs: React.FC = () => {
     );
 
     return (
-        <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Box sx={{ width: '100vw', minHeight: '100vh', px: 2, py: 4 }}>
+            <Container maxWidth={false} sx={{ maxWidth: '1400px', mx: 'auto' }}>
             <Typography variant="h4" gutterBottom sx={{ color: '#1B3C53', fontWeight: 700 }}>
                 🐾 My Dogs
             </Typography>
@@ -159,7 +183,8 @@ const MyDogs: React.FC = () => {
                     </Box>
                 )
             )}
-        </Container>
+            </Container>
+        </Box>
     );
 };
 
