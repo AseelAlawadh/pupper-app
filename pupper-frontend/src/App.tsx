@@ -236,7 +236,7 @@ function App() {
         return (
             <ThemeProvider theme={theme}>
                 <CssBaseline />
-                <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #F9F3EF 0%, #D2C1B6 100%)' }}>
+                <Box sx={{ width: '100vw', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #F9F3EF 0%, #D2C1B6 100%)', px: 2 }}>
                     <Authenticator
                         formFields={formFields}
                         components={{
@@ -286,7 +286,7 @@ function App() {
         <ThemeProvider theme={theme}>
             <CssBaseline />
             <Router>
-                <Box sx={{ background: '#f5f5f5', minHeight: '100vh' }}>
+                <Box sx={{ width: '100vw', background: '#f5f5f5', minHeight: '100vh' }}>
                     {/* Header with Login Button */}
                     <Box sx={{ 
                         display: 'flex', 

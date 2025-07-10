@@ -28,7 +28,9 @@ interface Dog {
 }
 
 const calculateAge = (birthday: string) => {
+  if (!birthday) return null;
   const birthDate = new Date(birthday);
+  if (isNaN(birthDate.getTime())) return null;
   const today = new Date();
   let age = today.getFullYear() - birthDate.getFullYear();
   const m = today.getMonth() - birthDate.getMonth();
@@ -379,11 +381,13 @@ const Home: React.FC = () => {
                   🐶 {dog.name} 💕
                 </Typography>
 
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    🎂 {calculateAge(dog.birthday)} years old
-                  </Typography>
-                </Box>
+                {dog.birthday && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      🎂 {calculateAge(dog.birthday) || 'Unknown'} years old
+                    </Typography>
+                  </Box>
+                )}
 
                 {dog.weight && (
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>

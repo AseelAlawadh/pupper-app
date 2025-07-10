@@ -10,6 +10,7 @@ interface Dog {
     image_url: string;
     wags: number;
     growls: number;
+    sentiment_tags: string[];
 }
 
 const MyDogs: React.FC = () => {

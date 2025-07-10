@@ -313,7 +313,7 @@ function DogDetail() {
                         }
                     }}>
                         <img
-                            src={dog.image_url || dog.original_key || 'https://via.placeholder.com/600x400?text=No+Image'}
+                            src={dog.image_url || 'https://via.placeholder.com/600x400?text=No+Image'}
                             alt={dog.name}
                             style={{
                                 maxWidth: '100%',
@@ -569,24 +569,33 @@ function DogDetail() {
             )}
 
             {/* Additional Images */}
-            {[dog.resized_400_key, dog.thumbnail_50_key].some(img => img) && (
+            {(dog.resized_400_url || dog.thumbnail_50_url) && (
                 <Paper elevation={2} sx={{ p: 4, borderRadius: 3 }}>
                     <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
                         More Photos
                     </Typography>
                     <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 3 }}>
-                        {[dog.resized_400_key, dog.thumbnail_50_key].map((img, idx) =>
-                            img ? (
-                                <Card key={idx} elevation={2}>
-                                    <CardMedia
-                                        component="img"
-                                        height="200"
-                                        image={img}
-                                        alt={`${dog.name} - image ${idx + 2}`}
-                                        sx={{ objectFit: 'cover' }}
-                                    />
-                                </Card>
-                            ) : null
+                        {dog.resized_400_url && (
+                            <Card elevation={2}>
+                                <CardMedia
+                                    component="img"
+                                    height="200"
+                                    image={dog.resized_400_url}
+                                    alt={`${dog.name} - resized`}
+                                    sx={{ objectFit: 'cover' }}
+                                />
+                            </Card>
+                        )}
+                        {dog.thumbnail_50_url && (
+                            <Card elevation={2}>
+                                <CardMedia
+                                    component="img"
+                                    height="200"
+                                    image={dog.thumbnail_50_url}
+                                    alt={`${dog.name} - thumbnail`}
+                                    sx={{ objectFit: 'cover' }}
+                                />
+                            </Card>
                         )}
                     </Box>
                 </Paper>
