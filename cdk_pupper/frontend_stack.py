@@ -54,7 +54,15 @@ class FrontendStack(Stack):
                                                                 )
                                                             ],
                                                             default_root_object="index.html",
-                                                            viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS
+                                                            viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+                                                            error_configurations=[
+                                                                cloudfront.CfnDistribution.CustomErrorResponseProperty(
+                                                                    error_code=404,
+                                                                    response_code=200,
+                                                                    response_page_path="/index.html",
+                                                                    error_caching_min_ttl=0
+                                                                )
+                                                            ]
                                                             )
 
         # Deploy built frontend to S3

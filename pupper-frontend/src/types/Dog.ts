@@ -16,6 +16,8 @@ export interface Dog {
     original_key: string;
     resized_400_key: string;
     thumbnail_50_key: string;
+    resized_400_url?: string;
+    thumbnail_50_url?: string;
     created_at: string;
     wags: number;
     growls: number;
