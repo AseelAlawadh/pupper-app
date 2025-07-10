@@ -188,7 +188,7 @@ function App() {
                                 <Box sx={{ display: 'flex', gap: 1 }}>
                                     <Button component={Link} to="/" sx={{ color: 'white' }}>Home</Button>
                                     <Button component={Link} to="/create-dog" sx={{ color: 'white' }}>Add Dog</Button>
-                                    <Button component={Link} to="/extract-text" sx={{ color: 'white' }}>Extract Text</Button>
+
                                     <Button component={Link} to="/match" sx={{ color: 'white' }}>Match</Button>
                                     <Button component={Link} to="/my-dogs" sx={{ color: 'white' }}>My Dogs</Button>
                                 </Box>

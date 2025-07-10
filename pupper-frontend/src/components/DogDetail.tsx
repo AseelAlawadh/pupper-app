@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
 import {Typography, Box, Button, Alert, Container, Paper, Skeleton, Card, CardMedia, Chip} from '@mui/material';
-import {ArrowBack as ArrowBackIcon, Pets as PetsIcon} from '@mui/icons-material';
+import {ArrowBack as ArrowBackIcon, Pets as PetsIcon, Share as ShareIcon} from '@mui/icons-material';
 import {type Dog} from '../types/Dog';
 import {useParams, useNavigate} from 'react-router-dom';
 import { fetchAuthSession } from 'aws-amplify/auth';
@@ -232,14 +232,43 @@ function DogDetail() {
     return (
         <Box sx={{ width: '100vw', minHeight: '100vh', px: 2, py: 4 }}>
             <Container maxWidth={false} sx={{ maxWidth: '1200px', mx: 'auto' }}>
-            {/* Back Button */}
-            <Button
-                startIcon={<ArrowBackIcon />}
-                onClick={() => navigate('/')}
-                sx={{ mb: 3 }}
-            >
-                Back to Dogs
-            </Button>
+            {/* Back and Share Buttons */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Button
+                    startIcon={<ArrowBackIcon />}
+                    onClick={() => navigate('/')}
+                >
+                    Back to Dogs
+                </Button>
+                
+                <Button
+                    startIcon={<ShareIcon />}
+                    variant="outlined"
+                    onClick={() => {
+                        const url = window.location.href;
+                        if (navigator.share) {
+                            navigator.share({
+                                title: `Meet ${dog?.name}!`,
+                                text: `Check out this adorable ${dog?.species} looking for a home!`,
+                                url: url
+                            });
+                        } else {
+                            navigator.clipboard.writeText(url);
+                            alert('Link copied to clipboard!');
+                        }
+                    }}
+                    sx={{
+                        borderColor: '#456882',
+                        color: '#456882',
+                        '&:hover': {
+                            borderColor: '#1B3C53',
+                            backgroundColor: 'rgba(69, 104, 130, 0.04)'
+                        }
+                    }}
+                >
+                    Share Dog
+                </Button>
+            </Box>
 
             {/* Hero Section */}
             <Paper elevation={3} sx={{ p: 4, mb: 4, borderRadius: 4, background: 'linear-gradient(135deg, #F9F3EF 0%, #D2C1B6 100%)', border: '1px solid rgba(27,60,83,0.1)' }}>

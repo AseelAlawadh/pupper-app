@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Typography, TextField, Button, Paper, Box, Card, CardContent, Chip, CircularProgress } from '@mui/material';
 import { fetchAuthSession } from 'aws-amplify/auth';
+import { Link } from 'react-router-dom';
 
 interface MatchedDog {
     dog_id: string;
@@ -133,34 +134,63 @@ const DogMatcher: React.FC = () => {
                     </Typography>
                     
                     {matches.map((dog) => (
-                        <Card key={dog.dog_id} sx={{ mb: 3 }}>
-                            <CardContent>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                                    <Typography variant="h6">{dog.name}</Typography>
+                        <Card key={dog.dog_id} sx={{ mb: 3, borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
+                            <CardContent sx={{ p: 3 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                                    <Typography variant="h5" sx={{ fontWeight: 600, color: '#1B3C53' }}>
+                                        🐶 {dog.name}
+                                    </Typography>
                                     <Chip 
                                         label={`${Math.round(dog.match_score * 100)}% Match`} 
-                                        color="primary"
+                                        sx={{
+                                            background: 'linear-gradient(45deg, #4CAF50 30%, #66BB6A 90%)',
+                                            color: 'white',
+                                            fontWeight: 600,
+                                            fontSize: '0.9rem'
+                                        }}
                                     />
                                 </Box>
                                 
-                                <Typography variant="body2" sx={{ mb: 2 }}>
-                                    Age: {dog.age} years • Weight: {dog.weight} lbs • Color: {dog.color}
+                                <Typography variant="body1" sx={{ mb: 2, color: '#456882' }}>
+                                    🎂 {dog.age} years old • ⚖️ {dog.weight} lbs • 🎨 {dog.color}
                                 </Typography>
                                 
-                                <Typography variant="body2" sx={{ mb: 2 }}>
-                                    {dog.description}
-                                </Typography>
+                                {dog.description && (
+                                    <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic' }}>
+                                        "{dog.description}"
+                                    </Typography>
+                                )}
                                 
-                                <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                                    Why this is a great match:
+                                <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600, color: '#1B3C53' }}>
+                                    ✨ Why this is a great match:
                                 </Typography>
-                                <ul>
+                                <Box sx={{ mb: 3 }}>
                                     {dog.match_reasons.map((reason, index) => (
-                                        <li key={index}>
-                                            <Typography variant="body2">{reason}</Typography>
-                                        </li>
+                                        <Typography key={index} variant="body2" sx={{ mb: 0.5, pl: 2 }}>
+                                            • {reason}
+                                        </Typography>
                                     ))}
-                                </ul>
+                                </Box>
+                                
+                                <Button
+                                    component={Link}
+                                    to={`/dogs/${dog.dog_id}`}
+                                    variant="contained"
+                                    fullWidth
+                                    sx={{
+                                        background: 'linear-gradient(45deg, #1B3C53 30%, #456882 90%)',
+                                        py: 1.5,
+                                        fontWeight: 600,
+                                        borderRadius: 2,
+                                        '&:hover': {
+                                            background: 'linear-gradient(45deg, #0f2a3a 30%, #3a5670 90%)',
+                                            transform: 'translateY(-2px)',
+                                            boxShadow: '0 6px 20px rgba(27, 60, 83, 0.4)'
+                                        }
+                                    }}
+                                >
+                                    👀 View Full Details ✨
+                                </Button>
                             </CardContent>
                         </Card>
                     ))}
