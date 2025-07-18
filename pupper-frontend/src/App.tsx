@@ -188,7 +188,7 @@ function App() {
                                 <Box sx={{ display: 'flex', gap: 1 }}>
                                     <Button component={Link} to="/" sx={{ color: 'white' }}>Home</Button>
                                     <Button component={Link} to="/create-dog" sx={{ color: 'white' }}>Add Dog</Button>
-
+                                    <Button component={Link} to="/extract-text" sx={{ color: 'white' }}>Extract Text</Button>
                                     <Button component={Link} to="/match" sx={{ color: 'white' }}>Match</Button>
                                     <Button component={Link} to="/my-dogs" sx={{ color: 'white' }}>My Dogs</Button>
                                 </Box>
@@ -365,9 +365,23 @@ function App() {
                         return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 200 }}><span>Loading user session...</span></Box>;
                     }
                     
-                    // Determine user role based on email or attributes
-                    const userEmail = user.signInDetails?.loginId || user.username || '';
-                    const isShelterUser = userEmail.includes('shelter') || userEmail.includes('admin');
+                    // Determine user role based on custom:user_type attribute
+                    const [userType, setUserType] = useState<string | null>(null);
+                    
+                    useEffect(() => {
+                        const checkUserType = async () => {
+                            try {
+                                const { fetchUserAttributes } = await import('aws-amplify/auth');
+                                const attributes = await fetchUserAttributes();
+                                setUserType(attributes['custom:user_type'] || 'regular');
+                            } catch (error) {
+                                setUserType('regular');
+                            }
+                        };
+                        checkUserType();
+                    }, [user]);
+                    
+                    const isShelterUser = userType === 'shelter';
                     
                     // Navigation items based on user type
                     const getNavItems = () => {
@@ -584,6 +598,7 @@ function App() {
                                         <Route path="/" element={<Home />} />
                                         <Route path="/dogs/:id" element={<DogDetail />} />
                                         <Route path="/create-dog" element={<CreateDog />} />
+                                        <Route path="/extract-text" element={<ExtractText />} />
                                         <Route path="/match" element={<DogMatcher />} />
                                         <Route path="/my-dogs" element={<MyDogs />} />
                                     </Routes>
