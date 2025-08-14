@@ -1,4 +1,5 @@
 # backend_stack.py
+import os
 
 from aws_cdk import (
     Stack,
@@ -52,7 +53,7 @@ class BackendStack(Stack):
                                               "DB_SECRET_ARN": db_instance.secret.secret_arn,
                                               "DB_HOST": db_instance.db_instance_endpoint_address,
                                               "BUCKET_NAME": buckets["original"].bucket_name,
-                                              "FERNET_KEY": "H_2p9clY89N59AsHb-faCsZ1z4qng-0f9xj1eN8nDgE=",
+                                              "FERNET_KEY": os.getenv("FERNET_KEY","xxxxx"),
                                               "POWERTOOLS_SERVICE_NAME": "pupper-backend",
                                               "POWERTOOLS_METRICS_NAMESPACE": "Pupper",
                                               "LOG_LEVEL": "INFO"
